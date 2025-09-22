@@ -391,9 +391,16 @@ function updateTable() {
         </span>
       </td>
       <td class="px-4 py-3 text-sm">${tool.surgeon || ''}</td>
-      <td class="px-4 py-3 text-sm">
-        ${tool.imageUrl ? `<button onclick="showImage('${tool.imageUrl}')" class="text-blue-600 hover:text-blue-800"><i class="fas fa-image"></i> ดูรูป</button>` : 'ไม่มีรูป'}
-      </td>
+        <td class="px-4 py-3 text-sm">
+          ${tool.imageUrl
+            ? `<div class="flex gap-3">
+                 <button onclick="showImage('${tool.imageUrl}')" class="text-blue-600 hover:text-blue-800">
+                   <i class="fas fa-image"></i> ดูรูป
+                 </button>
+                 <a href="${tool.imageUrl}" target="_blank" class="text-gray-600 hover:text-gray-800 underline">เปิดลิงก์</a>
+               </div>`
+            : 'ไม่มีรูป'}
+        </td>
       <td class="px-4 py-3 text-sm">
         <div class="flex gap-2">
           <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
