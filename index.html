@@ -45,14 +45,26 @@
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
+                   
                     <!-- Tool Type -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-tools mr-2"></i>ประเภทเครื่องมือ
-                        </label>
-                        <input type="text" id="toolType" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-tools mr-2"></i>ประเภทเครื่องมือ
+                      </label>
+                      <select id="toolTypeSelect" required
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">-- เลือกประเภท --</option>
+                        <option value="Plate and Screw">Plate and Screw</option>
+                        <option value="Nail">Nail</option>
+                        <option value="เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก">เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก</option>
+                        <option value="เครื่องมือ Scope">เครื่องมือ Scope</option>
+                        <option value="เอกสาร">เอกสาร</option>
+                        <option value="อื่นๆ">อื่นๆ</option>
+                      </select>
+                      <input type="text" id="toolTypeOther" placeholder="ระบุประเภทเครื่องมือ"
+                             class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hidden">
                     </div>
+
 
                     <!-- Quantity -->
                     <div>
@@ -72,6 +84,7 @@
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">เลือกสถานะ</option>
                             <option value="ต้องทำ Sterile">ต้องทำ Sterile</option>
+                            <option value="ต้องทำ Sterile">ไม่ต้องทำ Sterile</option>
                             <option value="Sterile มาแล้ว">Sterile มาแล้ว</option>
                         </select>
                     </div>
@@ -252,9 +265,21 @@
                         <input type="text" id="editCompanyName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ประเภทเครื่องมือ</label>
-                        <input type="text" id="editToolType" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">ประเภทเครื่องมือ</label>
+                      <select id="editToolTypeSelect" required
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- เลือกประเภท --</option>
+                        <option value="Plate and Screw">Plate and Screw</option>
+                        <option value="Nail">Nail</option>
+                        <option value="เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก">เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก</option>
+                        <option value="เครื่องมือ Scope">เครื่องมือ Scope</option>
+                        <option value="เอกสาร">เอกสาร</option>
+                        <option value="อื่นๆ">อื่นๆ</option>
+                      </select>
+                      <input type="text" id="editToolTypeOther" placeholder="ระบุประเภทเครื่องมือ"
+                             class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 hidden">
                     </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">จำนวน</label>
                         <input type="number" id="editQuantity" required min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -319,103 +344,239 @@
     </footer>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbzxLfUJIwFPEixuoERmew6L2g3mjRs6R0hAcdKRmDM9nibBVU7xbg4aVxKuuf37fO_y/exec"; // ต้องเป็น .../exec
+/* ==============================
+   CONFIG & STATE
+================================*/
+const API_BASE = "https://script.google.com/macros/s/AKfycbzxLfUJIwFPEixuoERmew6L2g3mjRs6R0hAcdKRmDM9nibBVU7xbg4aVxKuuf37fO_y/exec";
 
 let medicalTools = [];
 let editingIndex = -1;
-let currentPreviewDataURL = null;
+let currentPreviewDataURL = null;   // preview รูปตอนเพิ่มชุด
+let editNewImageDataURL = null;     // preview รูปใหม่ตอนแก้ไข
+let pendingSets = [];               // คิวชุดเครื่องมือที่จะบันทึกทีเดียว
 
-// escape สำหรับฝัง URL ใน attribute ให้ปลอดภัย
-function escAttr(s){
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/"/g,'&quot;')
-    .replace(/</g,'&lt;');
+/* ==============================
+   TOAST (แจ้งเตือนสวย ๆ)
+================================*/
+function ensureToastRoot(){
+  let root = document.getElementById('toastRoot');
+  if (!root){
+    root = document.createElement('div');
+    root.id = 'toastRoot';
+    root.className = 'fixed top-4 right-4 z-[9999] space-y-3 max-w-[90vw]';
+    document.body.appendChild(root);
+  }
+  return root;
 }
 
-    // ดึง fileId จากหลายรูปแบบลิงก์ของ Google Drive
+function notify(type='info', text='', {timeout=2800}={}){
+  const root = ensureToastRoot();
+  const map = {
+    success: { icon: 'fa-circle-check', bar: 'bg-green-500', border: 'border-green-500', color: 'text-green-600' },
+    error:   { icon: 'fa-triangle-exclamation', bar: 'bg-red-500',   border: 'border-red-500',   color: 'text-red-600' },
+    warning: { icon: 'fa-circle-exclamation',   bar: 'bg-amber-500', border: 'border-amber-500', color: 'text-amber-600' },
+    info:    { icon: 'fa-circle-info',          bar: 'bg-blue-500',  border: 'border-blue-500',  color: 'text-blue-600' },
+  };
+  const tone = map[type] || map.info;
+
+  const el = document.createElement('div');
+  el.className = `pointer-events-auto flex w-80 items-start gap-3 rounded-xl bg-white/95 backdrop-blur p-3 shadow-xl ring-1 ring-black/5 border-l-4 ${tone.border}`;
+  el.style.transition = 'transform .2s ease, opacity .2s ease';
+  el.style.transform = 'translateX(8px)';
+  el.style.opacity = '0';
+
+  el.innerHTML = `
+    <i class="fa-solid ${tone.icon} ${tone.color} mt-0.5 text-lg"></i>
+    <div class="text-sm text-gray-800 whitespace-pre-line flex-1">${text}</div>
+    <button type="button" aria-label="ปิด" class="text-gray-400 hover:text-gray-700">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  `;
+
+  const close = () => {
+    el.style.transform = 'translateX(8px)'; el.style.opacity = '0';
+    setTimeout(() => el.remove(), 180);
+  };
+  el.querySelector('button').addEventListener('click', close);
+
+  root.appendChild(el);
+  requestAnimationFrame(() => { el.style.transform = 'translateX(0)'; el.style.opacity = '1'; });
+  if (timeout > 0) setTimeout(close, timeout);
+}
+
+/* ==============================
+   HELPERS
+================================*/
+// เวลาเริ่มต้นช่องรับเครื่องมือ
+function setNowToReceiveDateTime(){
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+    .toISOString().slice(0,16);
+  document.getElementById('receiveDateTime').value = local;
+}
+
+// <input type="date"> ต้องการ yyyy-MM-dd
+function toDateInputValue(val){
+  if (!val) return '';
+  const s = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if (!isNaN(d)) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dd}`;
+  }
+  const m2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m2) return `${m2[3]}-${m2[2].padStart(2,'0')}-${m2[1].padStart(2,'0')}`;
+  return '';
+}
+
+// ดึงค่าจาก Select + อื่นๆ
+function getToolTypeValue(selectId = 'toolTypeSelect', otherId = 'toolTypeOther') {
+  const sel = document.getElementById(selectId);
+  const other = document.getElementById(otherId);
+  if (!sel) return '';
+  const v = sel.value;
+  if (v === 'อื่นๆ') {
+    const txt = (other?.value || '').trim();
+    return txt || 'อื่นๆ';
+  }
+  return v;
+}
+
+// ดึง fileId จากหลายรูปแบบลิงก์ Google Drive
 function extractDriveId(url){
   url = (url || '').trim();
   if (!url) return null;
-  let m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);   // ...?id=FILE_ID
-  if (m) return m[1];
-  m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);         // .../file/d/FILE_ID/...
-  if (m) return m[1];
+  let m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/); if (m) return m[1];
+  m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);       if (m) return m[1];
   return null;
 }
-
 // URL สำหรับฝังใน <img>
 function driveEmbedUrl(url){
-  const id = extractDriveId(url);
-  if (!id) return (url || '').trim();
-  // ใช้ uc แบบดูไฟล์
+  const id = extractDriveId(url); if (!id) return (url || '').trim();
   return `https://drive.google.com/uc?export=view&id=${id}`;
 }
-
-// URL สำรอง (มักขึ้นเสถียรกว่าในบางโดเมน)
+// URL สำรอง (thumbnail)
 function driveThumbUrl(url){
-  const id = extractDriveId(url);
-  if (!id) return (url || '').trim();
+  const id = extractDriveId(url); if (!id) return (url || '').trim();
   return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
 }
 
-// ---------- helper เรียก API แบบ form-urlencoded + ดีบัก ----------
+/* ==============================
+   API (form-urlencoded)
+================================*/
 async function callApi(payload) {
   const form = new URLSearchParams();
   form.append("payload", JSON.stringify(payload));
 
-  const res = await fetch(API_BASE, {
-    method: "POST",
-    body: form   // ไม่ตั้ง headers -> เบราว์เซอร์ใส่ application/x-www-form-urlencoded ให้เอง
-  });
-
-  const text = await res.text();       // เก็บ text ไว้ดีบัก
-  // แสดงสถานะใน console เพื่อไล่ปัญหาได้เลย
+  const res = await fetch(API_BASE, { method: "POST", body: form });
+  const text = await res.text(); // debug
   console.log("API status:", res.status, "body:", text);
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} - ${text.slice(0, 200)}`);
-  }
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    throw new Error("Invalid JSON from API: " + text.slice(0, 300));
-  }
+  if (!res.ok) throw new Error(`HTTP ${res.status} - ${text.slice(0,200)}`);
+  try { return JSON.parse(text); }
+  catch(e){ throw new Error("Invalid JSON from API: " + text.slice(0,300)); }
 }
 
-// ---------- ตั้งเวลาเริ่มต้น ----------
-document.addEventListener('DOMContentLoaded', async function() {
+/* ==============================
+   INIT
+================================*/
+document.addEventListener('DOMContentLoaded', async () => {
   setNowToReceiveDateTime();
-  // ping ให้รู้ว่า endpoint ใช้งานได้ไหม
+
+  // toggle ช่อง "อื่นๆ" (เพิ่ม)
+  document.getElementById('toolTypeSelect').addEventListener('change', function(){
+    const show = this.value === 'อื่นๆ';
+    document.getElementById('toolTypeOther').classList.toggle('hidden', !show);
+    if (!show) document.getElementById('toolTypeOther').value = '';
+  });
+  // toggle ช่อง "อื่นๆ" (แก้ไข)
+  document.getElementById('editToolTypeSelect').addEventListener('change', function(){
+    const show = this.value === 'อื่นๆ';
+    document.getElementById('editToolTypeOther').classList.toggle('hidden', !show);
+    if (!show) document.getElementById('editToolTypeOther').value = '';
+  });
+
+  // preview รูปตอนเพิ่ม
+  document.getElementById('toolImage').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) { currentPreviewDataURL = null; return; }
+    const rd = new FileReader();
+    rd.onload = ev => {
+      currentPreviewDataURL = ev.target.result;
+      document.getElementById('previewImg').src = currentPreviewDataURL;
+      document.getElementById('imagePreview').classList.remove('hidden');
+    };
+    rd.readAsDataURL(file);
+  });
+
+  // preview รูปตอนแก้ไข
+  document.getElementById('editImageInput').addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if (!f) return;
+    const rd = new FileReader();
+    rd.onload = ev => {
+      editNewImageDataURL = ev.target.result;
+      document.getElementById('editPreviewImg').src = editNewImageDataURL;
+      document.getElementById('editImagePreview').classList.remove('hidden');
+    };
+    rd.readAsDataURL(f);
+  });
+  document.getElementById('btnClearEditImage').addEventListener('click', ()=>{
+    editNewImageDataURL = null;
+    document.getElementById('editImageInput').value = '';
+    document.getElementById('editImagePreview').classList.add('hidden');
+  });
+
+  // เปิดรูปใน modal จากปุ่มในตาราง
+  document.getElementById('dataTableBody').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="view-image"]');
+    if (!btn) return;
+    const idx = Number(btn.dataset.idx);
+    const raw = (((medicalTools[idx] || {}).imageUrl) || '').toString().trim();
+    openImageModal(raw);
+  });
+  // ปิด modal รูป (คลิกพื้นหลัง)
+  document.getElementById('imageModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeImageModal();
+  });
+  // ปิด modal แก้ไข (คลิกพื้นหลัง)
+  document.getElementById('editModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeEditModal();
+  });
+
+  // คิว pending: ลบรายการ
+  document.getElementById('pendingBody')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-remove]');
+    if (!btn) return;
+    const i = Number(btn.dataset.remove);
+    pendingSets.splice(i, 1);
+    renderPending();
+  });
+  // ปุ่มเพิ่มชุด
+  document.getElementById('btnAddSet').addEventListener('click', onAddSet);
+  // ปุ่มล้างฟอร์มชุดนี้
+  document.getElementById('btnResetCurrent').addEventListener('click', onResetCurrentSet);
+  // ปุ่มบันทึกทั้งหมด
+  document.getElementById('btnSaveAll').addEventListener('click', onSaveAll);
+
+  // submit แก้ไข
+  document.getElementById('editForm').addEventListener('submit', onEditSubmit);
+
+  // ping & โหลดข้อมูล
   try {
-    const pong = await callApi({ action: "ping" });
-    console.log("ping:", pong);
+    console.log("ping:", await callApi({ action: "ping" }));
     await loadData();
   } catch (err) {
-    alert("API มีปัญหา: " + err.message + "\nโปรดตรวจ URL / สิทธิ์ของ Web App");
+    notify('error', "API มีปัญหา:\n" + err.message + "\nโปรดตรวจ URL / สิทธิ์ของ Web App", {timeout: 5000});
   }
 });
 
-function setNowToReceiveDateTime(){
-  const now = new Date();
-  const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-  document.getElementById('receiveDateTime').value = localDateTime;
-}
-
-// ---------- preview รูป ----------
-document.getElementById('toolImage').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) { currentPreviewDataURL = null; return; }
-  const reader = new FileReader();
-  reader.onload = evt => {
-    currentPreviewDataURL = evt.target.result;
-    document.getElementById('previewImg').src = currentPreviewDataURL;
-    document.getElementById('imagePreview').classList.remove('hidden');
-  };
-  reader.readAsDataURL(file);
-});
-
-// ---------- โหลดรายการ ----------
+/* ==============================
+   LOAD & TABLE
+================================*/
 async function loadData() {
   const json = await callApi({ action: "list" });
   if (!json.success) throw new Error(json.message || "list failed");
@@ -423,14 +584,6 @@ async function loadData() {
   updateTable();
 }
 
-function resetForm() {
-  document.getElementById('medicalToolForm').reset();
-  document.getElementById('imagePreview').classList.add('hidden');
-  currentPreviewDataURL = null;
-  setNowToReceiveDateTime();
-}
-
-// ---------- ตาราง ----------
 function updateTable() {
   const tbody = document.getElementById('dataTableBody');
   const recordCount = document.getElementById('recordCount');
@@ -450,9 +603,6 @@ function updateTable() {
   tbody.innerHTML = '';
 
   medicalTools.forEach((tool, index) => {
-    const row = document.createElement('tr');
-    row.className = 'hover:bg-gray-50';
-
     const companyName = (tool.companyName || '').trim();
     const toolType    = (tool.toolType || '').trim();
     const quantity    = tool.quantity ?? '';
@@ -460,9 +610,10 @@ function updateTable() {
     const statusText  = (tool.sterileStatus || '').trim();
     const statusClass = statusText === 'Sterile มาแล้ว'
       ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+    const hasImage    = !!(tool.imageUrl && String(tool.imageUrl).trim());
 
-    const hasImage = !!(tool.imageUrl && String(tool.imageUrl).trim());
-
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-50';
     row.innerHTML = `
       <td class="px-4 py-3 text-sm">${index + 1}</td>
       <td class="px-4 py-3 text-sm">${companyName}</td>
@@ -490,20 +641,82 @@ function updateTable() {
   });
 }
 
+/* ==============================
+   IMAGE MODAL
+================================*/
+function openImageModal(rawUrl){
+  const modal = document.getElementById('imageModal');
+  const img   = document.getElementById('modalImage');
 
-// ---------- modal รูป ----------
-function showImage(src){ document.getElementById('modalImage').src = src; document.getElementById('imageModal').classList.remove('hidden'); }
+  modal.classList.remove('hidden');
+  img.src = '';
+  img.alt = 'กำลังโหลดรูป...';
+  img.style.opacity = '0.25';
+  img.referrerPolicy = 'no-referrer';
+
+  if (!rawUrl) {
+    img.alt = 'ไม่พบ URL ของรูปภาพ';
+    img.style.opacity = '1';
+    console.warn('openImageModal: empty URL');
+    return;
+  }
+
+  const primary  = driveEmbedUrl(rawUrl);
+  const fallback = driveThumbUrl(rawUrl);
+  let usedFallback = false;
+
+  const setSrc = (u) => {
+    const bust = (u.includes('?') ? '&' : '?') + 't=' + Date.now();
+    img.src = u + bust;
+  };
+
+  img.onload = () => {
+    console.log('modalImage onload ✓', usedFallback ? '(fallback)' : '(primary)');
+    img.alt = '';
+    img.style.opacity = '1';
+  };
+  img.onerror = () => {
+    if (!usedFallback) {
+      console.warn('primary image failed, try fallback thumbnail');
+      usedFallback = true;
+      setSrc(fallback);
+    } else {
+      console.error('fallback image failed too');
+      img.src = '';
+      img.alt = 'ไม่สามารถแสดงรูปได้ (สิทธิ์ไฟล์/ลิงก์ผิด หรือไม่ใช่ไฟล์รูป)';
+      img.style.opacity = '1';
+    }
+  };
+
+  console.log('openImageModal URL(primary):', primary);
+  setSrc(primary);
+}
 function closeImageModal(){ document.getElementById('imageModal').classList.add('hidden'); }
-document.getElementById('imageModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeImageModal(); });
 
-// ---------- edit ----------
+/* ==============================
+   EDIT FLOW
+================================*/
 function editTool(index) {
   editingIndex = index;
   const tool = medicalTools[index];
 
   document.getElementById('editIndex').value = index;
   document.getElementById('editCompanyName').value = tool.companyName || '';
-  document.getElementById('editToolType').value = tool.toolType || '';
+
+  // ตั้งค่า "ประเภทเครื่องมือ" ใน Select + อื่นๆ
+  (function setEditToolType(val){
+    const sel = document.getElementById('editToolTypeSelect');
+    const other = document.getElementById('editToolTypeOther');
+    const options = [
+      'Plate and Screw','Nail','เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก',
+      'เครื่องมือ Scope','เอกสาร','อื่นๆ'
+    ];
+    const found = options.includes(val);
+    sel.value = found ? val : 'อื่นๆ';
+    other.classList.toggle('hidden', found);
+    other.value = found ? '' : (val || '');
+  })(tool.toolType || '');
+
   document.getElementById('editQuantity').value = tool.quantity ?? 1;
   document.getElementById('editSterileStatus').value = tool.sterileStatus || 'ต้องทำ Sterile';
   document.getElementById('editSurgeon').value = tool.surgeon || '';
@@ -521,39 +734,26 @@ function editTool(index) {
 
   document.getElementById('editModal').classList.remove('hidden');
 }
-
-function toDateInputValue(val){
-  if (!val) return '';
-  const s = String(val).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;      // already ok
-  const d = new Date(s);
-  if (!isNaN(d)) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,'0');
-    const dd = String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${dd}`;
-  }
-  const m2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // dd/mm/yyyy
-  if (m2) return `${m2[3]}-${m2[2].padStart(2,'0')}-${m2[1].padStart(2,'0')}`;
-  return '';
-}
-
-
 function closeEditModal(){ document.getElementById('editModal').classList.add('hidden'); editingIndex = -1; }
-document.getElementById('editModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeEditModal(); });
 
-document.getElementById('editForm').addEventListener('submit', async function(e){
+async function onEditSubmit(e){
   e.preventDefault();
   const idx = parseInt(document.getElementById('editIndex').value, 10);
   const row = medicalTools[idx];
-  if (!row || !row.id) { alert('ไม่พบข้อมูลรายการที่จะอัปเดต'); return; }
+  if (!row || !row.id) { notify('error','ไม่พบข้อมูลรายการที่จะอัปเดต'); return; }
+
+  // ตรวจ "อื่นๆ" ใน modal
+  if (document.getElementById('editToolTypeSelect').value === 'อื่นๆ' &&
+      !document.getElementById('editToolTypeOther').value.trim()){
+    notify('warning','กรุณาระบุประเภทเครื่องมือ (อื่นๆ)'); return;
+  }
 
   const json = await callApi({
     action: 'update',
     id: row.id,
     record: {
       companyName: document.getElementById('editCompanyName').value.trim(),
-      toolType: document.getElementById('editToolType').value.trim(),
+      toolType: getToolTypeValue('editToolTypeSelect','editToolTypeOther'),
       quantity: Number(document.getElementById('editQuantity').value || '0'),
       sterileStatus: document.getElementById('editSterileStatus').value,
       surgeon: document.getElementById('editSurgeon').value.trim(),
@@ -561,141 +761,51 @@ document.getElementById('editForm').addEventListener('submit', async function(e)
       receiveDateTime: row.receiveDateTime,
       receiver: document.getElementById('editReceiver').value.trim()
     },
-    image: editNewImageDataURL || null  // << ส่งรูปใหม่ (ถ้ามี)
+    image: editNewImageDataURL || null
   });
 
   if (!json.success) throw new Error(json.message || "update failed");
-  alert('แก้ไขข้อมูลเรียบร้อยแล้ว');
+  notify('success','แก้ไขข้อมูลเรียบร้อยแล้ว');
   editNewImageDataURL = null;
   closeEditModal();
   await loadData();
-});
+}
 
-
-let editNewImageDataURL = null;
-
-document.getElementById('editImageInput').addEventListener('change', (e)=>{
-  const f = e.target.files[0];
-  if (!f) return;
-  const rd = new FileReader();
-  rd.onload = ev => {
-    editNewImageDataURL = ev.target.result;
-    document.getElementById('editPreviewImg').src = editNewImageDataURL;
-    document.getElementById('editImagePreview').classList.remove('hidden');
-  };
-  rd.readAsDataURL(f);
-});
-
-document.getElementById('btnClearEditImage').addEventListener('click', ()=>{
-  editNewImageDataURL = null;
-  document.getElementById('editImageInput').value = '';
-  document.getElementById('editImagePreview').classList.add('hidden');
-});
-
-    
 async function deleteTool(index){
   const row = medicalTools[index];
-  if (!row || !row.id) { alert('ไม่พบข้อมูลรายการที่จะลบ'); return; }
+  if (!row || !row.id) { notify('error','ไม่พบข้อมูลรายการที่จะลบ'); return; }
   if (!confirm('คุณต้องการลบข้อมูลนี้หรือไม่?')) return;
   const json = await callApi({ action: 'delete', id: row.id });
   if (!json.success) throw new Error(json.message || "delete failed");
-  alert('ลบข้อมูลเรียบร้อยแล้ว');
+  notify('success','ลบข้อมูลเรียบร้อยแล้ว');
   await loadData();
 }
 
-// ดักคลิกปุ่ม "ดูรูป" (ไม่พึ่งพา URL ใน attribute)
-document.getElementById('dataTableBody').addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-action="view-image"]');
-  if (!btn) return;
-  const idx = Number(btn.dataset.idx);
-  const raw = (((medicalTools[idx] || {}).imageUrl) || '').toString().trim();
-  openImageModal(raw);
-});
-
-function openImageModal(rawUrl){
-  const modal = document.getElementById('imageModal');
-  const img   = document.getElementById('modalImage');
-
-  modal.classList.remove('hidden');
-
-  // reset state
-  img.src = '';
-  img.alt = 'กำลังโหลดรูป...';
-  img.style.opacity = '0.25';
-  img.referrerPolicy = 'no-referrer';
-
-  if (!rawUrl) {
-    img.alt = 'ไม่พบ URL ของรูปภาพ';
-    img.style.opacity = '1';
-    console.warn('openImageModal: empty URL');
-    return;
-  }
-
-  const primary  = driveEmbedUrl(rawUrl);   // สร้าง URL มาตรฐาน
-  const fallback = driveThumbUrl(rawUrl);   // URL สำรอง
-  let usedFallback = false;
-
-  const setSrc = (u) => {
-    const bust = (u.includes('?') ? '&' : '?') + 't=' + Date.now(); // กัน cache
-    img.src = u + bust;
-  };
-
-  img.onload = () => {
-    console.log('modalImage onload ✓', usedFallback ? '(fallback)' : '(primary)');
-    img.alt = '';
-    img.style.opacity = '1';
-  };
-
-  img.onerror = () => {
-    if (!usedFallback) {
-      console.warn('primary image failed, try fallback thumbnail');
-      usedFallback = true;
-      setSrc(fallback);
-    } else {
-      console.error('fallback image failed too');
-      img.src = '';
-      img.alt = 'ไม่สามารถแสดงรูปได้ (สิทธิ์ไฟล์/ลิงก์ผิด หรือไม่ใช่ไฟล์รูป)';
-      img.style.opacity = '1';
-    }
-  };
-
-  console.log('openImageModal URL(primary):', primary);
-  setSrc(primary);
-}
-
-// ===== คิวชุดที่จะบันทึก =====
-let pendingSets = [];   // เก็บชุดเครื่องมือหลายชุด (รวมรูป base64 ของแต่ละชุด)
-
-// ดึงค่าจากฟอร์มปัจจุบัน (ยกเว้นผู้รับ ซึ่งจะถามทีหลัง)
+/* ==============================
+   PENDING QUEUE (หลายชุด)
+================================*/
 function getCurrentSetFromForm() {
   return {
     companyName: document.getElementById('companyName').value.trim(),
-    toolType: document.getElementById('toolType').value.trim(),
+    toolType: getToolTypeValue('toolTypeSelect','toolTypeOther'),
     quantity: Number(document.getElementById('quantity').value || '0'),
     sterileStatus: document.getElementById('sterileStatus').value,
     surgeon: document.getElementById('surgeon').value.trim(),
-    surgeryDate: document.getElementById('surgeryDate').value,          // yyyy-MM-dd
-    receiveDateTime: document.getElementById('receiveDateTime').value,  // yyyy-MM-ddTHH:mm
-    // receiver จะเติมทีหลังตอนบันทึกทั้งหมด
+    surgeryDate: document.getElementById('surgeryDate').value,
+    receiveDateTime: document.getElementById('receiveDateTime').value,
     imageDataURL: currentPreviewDataURL || null
   };
 }
-
-// validate ฟอร์ม 1 ชุด (เบื้องต้น)
 function validateOneSet(set) {
   if (!set.companyName) return 'กรุณากรอกชื่อบริษัท';
-  if (!set.toolType) return 'กรุณากรอกประเภทเครื่องมือ';
+  if (!set.toolType) return 'กรุณาเลือก/กรอกประเภทเครื่องมือ';
   if (!set.quantity || set.quantity < 1) return 'จำนวนต้องมากกว่า 0';
   if (!set.sterileStatus) return 'กรุณาเลือกสถานะเครื่องมือ';
   if (!set.surgeon) return 'กรุณากรอกแพทย์ผ่าตัด';
   if (!set.surgeryDate) return 'กรุณาเลือกวันที่ผ่าตัด';
   if (!set.receiveDateTime) return 'กรุณาเลือกวันเวลารับเครื่องมือ';
-  // รูปไม่บังคับ แต่ถ้าต้องการบังคับให้มีรูป ให้ปลดคอมเมนต์บรรทัดล่าง:
-  // if (!set.imageDataURL) return 'กรุณาเลือกรูปภาพเครื่องมือ';
   return null;
 }
-
-// render คิว (ตารางเล็ก)
 function renderPending() {
   const cnt = document.getElementById('pendingCount');
   const empty = document.getElementById('pendingEmpty');
@@ -704,18 +814,14 @@ function renderPending() {
 
   cnt.textContent = `${pendingSets.length} ชุด`;
   if (!pendingSets.length) {
-    empty.classList.remove('hidden');
-    list.classList.add('hidden');
-    body.innerHTML = '';
+    empty.classList.remove('hidden'); list.classList.add('hidden'); body.innerHTML = '';
     return;
   }
-  empty.classList.add('hidden');
-  list.classList.remove('hidden');
+  empty.classList.add('hidden'); list.classList.remove('hidden'); body.innerHTML = '';
 
-  body.innerHTML = '';
   pendingSets.forEach((s, i) => {
     const tr = document.createElement('tr');
-    const surgeryDate = s.surgeryDate ? new Date(s.surgeryDate).toLocaleDateString('th-TH') : '-';
+    const sd = s.surgeryDate ? new Date(s.surgeryDate).toLocaleDateString('th-TH') : '-';
     tr.innerHTML = `
       <td class="px-4 py-2 text-sm">${i+1}</td>
       <td class="px-4 py-2 text-sm">${s.companyName}</td>
@@ -723,7 +829,7 @@ function renderPending() {
       <td class="px-4 py-2 text-sm">${s.quantity}</td>
       <td class="px-4 py-2 text-sm">${s.sterileStatus}</td>
       <td class="px-4 py-2 text-sm">${s.surgeon}</td>
-      <td class="px-4 py-2 text-sm">${surgeryDate}</td>
+      <td class="px-4 py-2 text-sm">${sd}</td>
       <td class="px-4 py-2 text-sm">
         ${s.imageDataURL ? '<span class="text-green-700">มีรูป</span>' : '<span class="text-gray-500">ไม่มีรูป</span>'}
       </td>
@@ -731,70 +837,54 @@ function renderPending() {
         <button type="button" class="text-red-600 hover:text-red-800" data-remove="${i}">
           <i class="fas fa-trash"></i>
         </button>
-      </td>
-    `;
+      </td>`;
     body.appendChild(tr);
   });
 }
-
-// ลบชุดจากคิว (ปุ่มถังขยะ)
-document.getElementById('pendingBody')?.addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-remove]');
-  if (!btn) return;
-  const i = Number(btn.dataset.remove);
-  pendingSets.splice(i, 1);
-  renderPending();
-});
-
-// ปุ่ม "เพิ่มชุดเครื่องมือ"
-document.getElementById('btnAddSet').addEventListener('click', () => {
+function onAddSet(){
+  // ถ้าเลือก "อื่นๆ" แต่ไม่พิมพ์ ให้เตือน
+  if (document.getElementById('toolTypeSelect').value === 'อื่นๆ' &&
+      !document.getElementById('toolTypeOther').value.trim()){
+    notify('warning','กรุณาระบุประเภทเครื่องมือในช่อง "อื่นๆ"'); return;
+  }
   const set = getCurrentSetFromForm();
   const err = validateOneSet(set);
-  if (err) { alert(err); return; }
+  if (err) { notify('warning', err); return; }
 
   pendingSets.push(set);
   renderPending();
 
-  // เคลียร์ฟอร์มชุดนี้ (ไม่เคลียร์วันเวลา ถ้าอยากเคลียร์ uncomment)
+  // เคลียร์เฉพาะชุดนี้ (เก็บวัน/เวลาเดิมไว้)
   document.getElementById('companyName').value = '';
-  document.getElementById('toolType').value = '';
+  document.getElementById('toolTypeSelect').value = '';
+  document.getElementById('toolTypeOther').value = '';
+  document.getElementById('toolTypeOther').classList.add('hidden');
   document.getElementById('quantity').value = '';
   document.getElementById('sterileStatus').value = '';
-  // document.getElementById('surgeryDate').value = '';
-  // document.getElementById('receiveDateTime').value = '';
   document.getElementById('surgeon').value = '';
 
-  // ล้างรูป preview
   currentPreviewDataURL = null;
   document.getElementById('toolImage').value = '';
   document.getElementById('imagePreview').classList.add('hidden');
 
-  // โฟกัสกลับช่องแรก เพื่อกรอกชุดถัดไปไว ๆ
+  notify('success', 'เพิ่มชุดเครื่องมือเข้าคิวแล้ว');
   document.getElementById('companyName').focus();
-});
-
-// ปุ่ม "ล้างฟอร์มชุดนี้"
-document.getElementById('btnResetCurrent').addEventListener('click', () => {
+}
+function onResetCurrentSet(){
   document.getElementById('medicalToolForm').reset();
+  document.getElementById('toolTypeOther').classList.add('hidden');
   document.getElementById('imagePreview').classList.add('hidden');
   currentPreviewDataURL = null;
-  // ตั้งเวลาปัจจุบันให้ช่องรับเครื่องมือใหม่
-  const now = new Date();
-  const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-  document.getElementById('receiveDateTime').value = localDateTime;
-});
-
-// ปุ่ม "บันทึกทั้งหมด" → ยิง create ทีละชุด โดยเติมผู้รับเครื่องมือ
-document.getElementById('btnSaveAll').addEventListener('click', async () => {
-  if (!pendingSets.length) { alert('ยังไม่มีชุดในคิว'); return; }
+  setNowToReceiveDateTime();
+  notify('info', 'ล้างฟอร์มชุดนี้แล้ว');
+}
+async function onSaveAll(){
+  if (!pendingSets.length) { notify('warning','ยังไม่มีชุดในคิว'); return; }
   const receiver = (document.getElementById('receiverFinal').value || '').trim();
-  if (!receiver) { alert('กรุณากรอกชื่อผู้รับเครื่องมือ'); return; }
-
-  // ยืนยัน
+  if (!receiver) { notify('warning','กรุณากรอกชื่อผู้รับเครื่องมือ'); return; }
   if (!confirm(`ยืนยันบันทึกทั้งหมด ${pendingSets.length} ชุด ?`)) return;
 
   try {
-    // ส่งทีละชุด (ชัวร์กว่า Promise.all กรณีเน็ตแกว่ง)
     for (const s of pendingSets) {
       const payload = {
         action: 'create',
@@ -806,29 +896,23 @@ document.getElementById('btnSaveAll').addEventListener('click', async () => {
           surgeon: s.surgeon,
           surgeryDate: s.surgeryDate,
           receiveDateTime: s.receiveDateTime,
-          receiver: receiver              // เติมผู้รับที่ใส่ครั้งเดียว
+          receiver: receiver
         },
-        image: s.imageDataURL || null     // รูปของชุดนั้น ๆ
+        image: s.imageDataURL || null
       };
       const res = await callApi(payload);
       if (!res.success) throw new Error(res.message || 'create failed');
     }
-
-    alert('บันทึกทั้งหมดเรียบร้อยแล้ว');
+    notify('success','บันทึกทั้งหมดเรียบร้อยแล้ว');
     pendingSets = [];
     renderPending();
     document.getElementById('receiverFinal').value = '';
-    // โหลดตารางหลักใหม่
     await loadData();
   } catch (err) {
-    alert('บันทึกไม่สำเร็จ: ' + err.message);
+    notify('error','บันทึกไม่สำเร็จ: ' + err.message, {timeout: 5000});
   }
-});
-
-
-
-
-
+}
 </script>
+
 
 </html>
