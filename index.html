@@ -500,6 +500,32 @@ document.getElementById('dataTableBody').addEventListener('click', (e) => {
   openImageModal(url);
 });
 
+    // ดึง fileId จากหลากหลายรูปแบบลิงก์ของ Google Drive
+function extractDriveId(url){
+  url = (url || '').trim();
+  if (!url) return null;
+  let m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);      // ...?id=FILE_ID
+  if (m) return m[1];
+  m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);           // .../file/d/FILE_ID/...
+  if (m) return m[1];
+  return null;
+}
+
+// สร้าง URL สำหรับฝังรูปใน <img>
+function driveEmbedUrl(url){
+  const id = extractDriveId(url);
+  if (!id) return (url || '').trim();
+  return `https://drive.google.com/uc?export=view&id=${id}`;
+}
+
+// URL สำรอง (thumbnail) — มักโหลดติดแม้ uc บางครั้งจะงอแง
+function driveThumbUrl(url){
+  const id = extractDriveId(url);
+  if (!id) return (url || '').trim();
+  // sz=w2000 ให้ขนาดใหญ่พอใน modal
+  return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
+}
+
 
 function openImageModal(url){
   url = (url || '').trim();           // <<<<<< ตัดช่องว่าง
