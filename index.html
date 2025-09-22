@@ -372,7 +372,7 @@ function updateTable() {
   const tbody = document.getElementById('dataTableBody');
   const recordCount = document.getElementById('recordCount');
 
-  if (!medicalTools.length) {
+  if (!Array.isArray(medicalTools) || medicalTools.length === 0) {
     tbody.innerHTML = `
       <tr id="noDataRow">
         <td colspan="8" class="px-4 py-8 text-center text-gray-500">
@@ -390,38 +390,55 @@ function updateTable() {
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
 
-    const imgCell = tool.imageUrl
+    const companyName   = (tool.companyName || '').toString().trim();
+    const toolType      = (tool.toolType || '').toString().trim();
+    const quantity      = tool.quantity ?? '';
+    const surgeon       = (tool.surgeon || '').toString().trim();
+    const statusText    = (tool.sterileStatus || '').toString().trim();
+    const statusClass   = statusText === 'Sterile มาแล้ว'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800';
+
+    // ตัดช่องว่างและ escape ก่อนฝังใน attribute
+    const imgUrlRaw = (tool.imageUrl || '');
+    const imgUrl    = imgUrlRaw.toString().trim();
+    const imgCell   = imgUrl
       ? `<button type="button"
                  class="text-blue-600 hover:text-blue-800"
                  data-action="view-image"
-                 data-url="${escAttr(tool.imageUrl)}">
+                 data-url="${escAttr(imgUrl)}"
+                 aria-label="ดูรูปภาพ">
            <i class="fas fa-image"></i> ดูรูป
          </button>`
       : 'ไม่มีรูป';
 
     row.innerHTML = `
       <td class="px-4 py-3 text-sm">${index + 1}</td>
-      <td class="px-4 py-3 text-sm">${tool.companyName || ''}</td>
-      <td class="px-4 py-3 text-sm">${tool.toolType || ''}</td>
-      <td class="px-4 py-3 text-sm">${tool.quantity ?? ''}</td>
+      <td class="px-4 py-3 text-sm">${companyName}</td>
+      <td class="px-4 py-3 text-sm">${toolType}</td>
+      <td class="px-4 py-3 text-sm">${quantity}</td>
       <td class="px-4 py-3 text-sm">
-        <span class="px-2 py-1 rounded-full text-xs ${tool.sterileStatus === 'Sterile มาแล้ว' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-          ${tool.sterileStatus || ''}
+        <span class="px-2 py-1 rounded-full text-xs ${statusClass}">
+          ${statusText}
         </span>
       </td>
-      <td class="px-4 py-3 text-sm">${tool.surgeon || ''}</td>
+      <td class="px-4 py-3 text-sm">${surgeon}</td>
       <td class="px-4 py-3 text-sm">${imgCell}</td>
       <td class="px-4 py-3 text-sm">
         <div class="flex gap-2">
-          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
-          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
+          <button onclick="editTool(${index})"
+                  class="text-blue-600 hover:text-blue-800"
+                  title="แก้ไข"><i class="fas fa-edit"></i></button>
+          <button onclick="deleteTool(${index})"
+                  class="text-red-600 hover:text-red-800"
+                  title="ลบ"><i class="fas fa-trash"></i></button>
         </div>
-      </td>`;
+      </td>
+    `;
+
     tbody.appendChild(row);
   });
 }
-
-
 
 // ---------- modal รูป ----------
 function showImage(src){ document.getElementById('modalImage').src = src; document.getElementById('imageModal').classList.remove('hidden'); }
@@ -488,33 +505,28 @@ document.getElementById('dataTableBody').addEventListener('click', (e) => {
   openImageModal(url);
 });
 
-// เปิดรูปใน Modal แบบมีสถานะโหลด + จัดการ error
 function openImageModal(url){
+  url = (url || '').trim();           // <<<<<< ตัดช่องว่าง
   const modal = document.getElementById('imageModal');
   const img   = document.getElementById('modalImage');
 
-  // แสดงสถานะกำลังโหลด (แทนรูปชั่วคราว)
   img.removeAttribute('src');
   img.alt = 'กำลังโหลดรูป...';
   img.style.opacity = '0.2';
-
-  // เปิด Modal ก่อน แล้วค่อยเปลี่ยน src
   modal.classList.remove('hidden');
 
-  // โหลดรูปใหม่แบบชัวร์ ๆ
+  if (!url) {                         // กันกรณีว่างจริง ๆ
+    img.alt = 'ไม่พบ URL ของรูปภาพ';
+    img.style.opacity = '1';
+    return;
+  }
+
   const loader = new Image();
-  loader.onload = () => {
-    img.src = url;
-    img.alt = '';
-    img.style.opacity = '1';
-  };
-  loader.onerror = () => {
-    img.removeAttribute('src');
-    img.alt = 'ไม่สามารถแสดงรูปได้ (ตรวจสิทธิ์ไฟล์ใน Drive)';
-    img.style.opacity = '1';
-  };
-  loader.src = url; // เริ่มโหลด
+  loader.onload = () => { img.src = url; img.alt=''; img.style.opacity='1'; };
+  loader.onerror = () => { img.removeAttribute('src'); img.alt='ไม่สามารถแสดงรูปได้'; img.style.opacity='1'; };
+  loader.src = url;
 }
+
 
 // ปิด Modal เมื่อคลิกพื้นหลัง
 document.getElementById('imageModal').addEventListener('click', function(e) {
