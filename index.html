@@ -302,8 +302,8 @@ async function loadData() {
   try {
     const res = await fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'list' })
+     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+     body: JSON.stringify(payload)
     });
     const json = await res.json();
     if (json.success) {
@@ -339,7 +339,7 @@ document.getElementById('medicalToolForm').addEventListener('submit', async func
   try {
     const res = await fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
     const json = await res.json();
@@ -478,7 +478,7 @@ document.getElementById('editForm').addEventListener('submit', async function(e)
   try {
     const res = await fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
     const json = await res.json();
@@ -507,8 +507,8 @@ async function deleteTool(index) {
   try {
     const res = await fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'delete', id: row.id })
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
     });
     const json = await res.json();
     if (json.success) {
