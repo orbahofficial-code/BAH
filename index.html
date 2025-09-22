@@ -233,7 +233,27 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">วันที่ผ่าตัด</label>
                         <input type="date" id="editSurgeryDate" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <div>
+                    <!-- Edit: เปลี่ยนรูป (ไม่บังคับ) -->
+                    <div class="grid grid-cols-1 gap-3 pt-2 md:col-span-2">
+                      <label class="block text-sm font-medium text-gray-700">
+                        <i class="fas fa-camera mr-2"></i> เปลี่ยนรูปภาพ (ถ้าไม่เลือก จะใช้รูปเดิม)
+                      </label>
+                      <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <input type="file" id="editImageInput" accept="image/*" class="hidden">
+                        <div id="editImageCurrent" class="mb-2 text-sm text-gray-600"></div>
+                        <div id="editImagePreview" class="hidden mb-2">
+                          <img id="editPreviewImg" class="mx-auto max-h-36 rounded-lg" alt="">
+                        </div>
+                        <div class="flex gap-2 justify-center">
+                          <button type="button"
+                                  onclick="document.getElementById('editImageInput').click()"
+                                  class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md">เลือกรูปใหม่</button>
+                          <button type="button" id="btnClearEditImage"
+                                  class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md">ล้างรูปใหม่</button>
+                        </div>
+                      </div>
+                    </div>
+                                        <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">ผู้รับเครื่องมือ</label>
                         <input type="text" id="editReceiver" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
@@ -463,6 +483,7 @@ document.getElementById('imageModal').addEventListener('click', e => { if (e.tar
 function editTool(index) {
   editingIndex = index;
   const tool = medicalTools[index];
+
   document.getElementById('editIndex').value = index;
   document.getElementById('editCompanyName').value = tool.companyName || '';
   document.getElementById('editToolType').value = tool.toolType || '';
@@ -471,8 +492,19 @@ function editTool(index) {
   document.getElementById('editSurgeon').value = tool.surgeon || '';
   document.getElementById('editSurgeryDate').value = (tool.surgeryDate || '').split('T')[0] || '';
   document.getElementById('editReceiver').value = tool.receiver || '';
+
+  // รูปปัจจุบัน + รีเซ็ตตัวเลือกใหม่
+  const cur = (tool.imageUrl || '').trim();
+  document.getElementById('editImageCurrent').innerHTML = cur
+    ? `<span class="text-gray-700">รูปปัจจุบัน:</span> <a href="${cur}" target="_blank" class="underline text-blue-600">เปิดดู</a>`
+    : `<span class="text-gray-500">ยังไม่มีรูป</span>`;
+  editNewImageDataURL = null;
+  document.getElementById('editImageInput').value = '';
+  document.getElementById('editImagePreview').classList.add('hidden');
+
   document.getElementById('editModal').classList.remove('hidden');
 }
+
 function closeEditModal(){ document.getElementById('editModal').classList.add('hidden'); editingIndex = -1; }
 document.getElementById('editModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeEditModal(); });
 
@@ -481,6 +513,7 @@ document.getElementById('editForm').addEventListener('submit', async function(e)
   const idx = parseInt(document.getElementById('editIndex').value, 10);
   const row = medicalTools[idx];
   if (!row || !row.id) { alert('ไม่พบข้อมูลรายการที่จะอัปเดต'); return; }
+
   const json = await callApi({
     action: 'update',
     id: row.id,
@@ -491,16 +524,41 @@ document.getElementById('editForm').addEventListener('submit', async function(e)
       sterileStatus: document.getElementById('editSterileStatus').value,
       surgeon: document.getElementById('editSurgeon').value.trim(),
       surgeryDate: document.getElementById('editSurgeryDate').value,
-      receiveDateTime: row.receiveDateTime, // เก็บของเดิม
+      receiveDateTime: row.receiveDateTime,
       receiver: document.getElementById('editReceiver').value.trim()
-    }
+    },
+    image: editNewImageDataURL || null  // << ส่งรูปใหม่ (ถ้ามี)
   });
+
   if (!json.success) throw new Error(json.message || "update failed");
   alert('แก้ไขข้อมูลเรียบร้อยแล้ว');
+  editNewImageDataURL = null;
   closeEditModal();
   await loadData();
 });
 
+
+let editNewImageDataURL = null;
+
+document.getElementById('editImageInput').addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = ev => {
+    editNewImageDataURL = ev.target.result;
+    document.getElementById('editPreviewImg').src = editNewImageDataURL;
+    document.getElementById('editImagePreview').classList.remove('hidden');
+  };
+  rd.readAsDataURL(f);
+});
+
+document.getElementById('btnClearEditImage').addEventListener('click', ()=>{
+  editNewImageDataURL = null;
+  document.getElementById('editImageInput').value = '';
+  document.getElementById('editImagePreview').classList.add('hidden');
+});
+
+    
 async function deleteTool(index){
   const row = medicalTools[index];
   if (!row || !row.id) { alert('ไม่พบข้อมูลรายการที่จะลบ'); return; }
