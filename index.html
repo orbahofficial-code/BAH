@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบรับเครื่องมือแพทย์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .modal-backdrop { backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-center">
+                <i class="fas fa-stethoscope text-3xl mr-4"></i>
+                <h1 class="text-2xl md:text-3xl font-bold">ระบบรับเครื่องมือแพทย์</h1>
+            </div>
+            <p class="text-center mt-2 text-blue-100">โรงพยาบาลภูมิพลอดุลยเดช</p>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Form Section -->
+        <div class="bg-white rounded-xl card-shadow p-6 mb-8">
+            <div class="flex items-center mb-6">
+                <i class="fas fa-plus-circle text-blue-600 text-2xl mr-3"></i>
+                <h2 class="text-xl font-semibold text-gray-800">เพิ่มข้อมูลเครื่องมือแพทย์</h2>
+            </div>
+
+            <form id="medicalToolForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Company Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-building mr-2"></i>ชื่อบริษัท
+                        </label>
+                        <input type="text" id="companyName" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Tool Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tools mr-2"></i>ประเภทเครื่องมือ
+                        </label>
+                        <input type="text" id="toolType" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Quantity -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-hashtag mr-2"></i>จำนวน
+                        </label>
+                        <input type="number" id="quantity" required min="1"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Sterile Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-shield-alt mr-2"></i>สถานะเครื่องมือ
+                        </label>
+                        <select id="sterileStatus" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">เลือกสถานะ</option>
+                            <option value="ต้องทำ Sterile">ต้องทำ Sterile</option>
+                            <option value="Sterile มาแล้ว">Sterile มาแล้ว</option>
+                        </select>
+                    </div>
+
+                    <!-- Surgeon -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user-md mr-2"></i>แพทย์ผ่าตัด
+                        </label>
+                        <input type="text" id="surgeon" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Surgery Date -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar-alt mr-2"></i>วันที่ผ่าตัด
+                        </label>
+                        <input type="date" id="surgeryDate" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Receive DateTime -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-clock mr-2"></i>วันที่และเวลารับเครื่องมือ
+                        </label>
+                        <input type="datetime-local" id="receiveDateTime" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Receiver -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2"></i>ผู้รับเครื่องมือ
+                        </label>
+                        <input type="text" id="receiver" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-camera mr-2"></i>อัพโหลดรูปภาพเครื่องมือ
+                    </label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                        <input type="file" id="toolImage" accept="image/*" class="hidden">
+                        <div id="imagePreview" class="hidden mb-4">
+                            <img id="previewImg" class="mx-auto max-h-32 rounded-lg">
+                        </div>
+                        <button type="button" onclick="document.getElementById('toolImage').click()" 
+                                class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors">
+                            <i class="fas fa-upload mr-2"></i>เลือกรูปภาพ
+                        </button>
+                        <p class="text-sm text-gray-500 mt-2">รองรับไฟล์ JPG, PNG</p>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                    <button type="submit" 
+                            class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fas fa-save mr-2"></i>บันทึกข้อมูล
+                    </button>
+                    <button type="button" onclick="resetForm()" 
+                            class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors font-medium">
+                        <i class="fas fa-redo mr-2"></i>ล้างฟอร์ม
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Data Table -->
+        <div class="bg-white rounded-xl card-shadow p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <i class="fas fa-table text-blue-600 text-2xl mr-3"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">ข้อมูลเครื่องมือที่บันทึก</h2>
+                </div>
+                <span id="recordCount" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">0 รายการ</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto">
+                    <thead class="bg-blue-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ลำดับ</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">บริษัท</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">เครื่องมือ</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จำนวน</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">สถานะ</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">แพทย์</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">รูปภาพ</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody" class="divide-y divide-gray-200">
+                        <tr id="noDataRow">
+                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                <i class="fas fa-inbox text-4xl mb-2 block"></i>
+                                ยังไม่มีข้อมูล
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-4xl max-h-full overflow-auto">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="text-lg font-semibold">รูปภาพเครื่องมือ</h3>
+                <button onclick="closeImageModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <img id="modalImage" class="max-w-full h-auto rounded-lg">
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-full overflow-auto">
+            <div class="p-6 border-b">
+                <h3 class="text-lg font-semibold">แก้ไขข้อมูลเครื่องมือ</h3>
+            </div>
+            <form id="editForm" class="p-6 space-y-4">
+                <input type="hidden" id="editIndex">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อบริษัท</label>
+                        <input type="text" id="editCompanyName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ประเภทเครื่องมือ</label>
+                        <input type="text" id="editToolType" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">จำนวน</label>
+                        <input type="number" id="editQuantity" required min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">สถานะเครื่องมือ</label>
+                        <select id="editSterileStatus" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="ต้องทำ Sterile">ต้องทำ Sterile</option>
+                            <option value="Sterile มาแล้ว">Sterile มาแล้ว</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">แพทย์ผ่าตัด</label>
+                        <input type="text" id="editSurgeon" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">วันที่ผ่าตัด</label>
+                        <input type="date" id="editSurgeryDate" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ผู้รับเครื่องมือ</label>
+                        <input type="text" id="editReceiver" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-save mr-2"></i>บันทึกการแก้ไข
+                    </button>
+                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                        ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white mt-16">
+        <div class="container mx-auto px-4 py-6 text-center">
+            <p class="text-blue-100">พัฒนาระบบโดย ร.ต.ธนกฤต วงศ์ศิลา น.สันทัดงาน กวห.รพ.ภูมิพลอดุลยเดช พอ.</p>
+        </div>
+    </footer>
+
+    <script>
+/** =========================
+ *  ตั้งค่า API_BASE เป็น URL Web App ของ Google Apps Script
+ *  ตัวอย่าง: const API_BASE = "https://script.google.com/macros/s/AKfycbx.../exec";
+ ========================== */
+const API_BASE = "https://script.google.com/macros/s/AKfycbzxLfUJIwFPEixuoERmew6L2g3mjRs6R0hAcdKRmDM9nibBVU7xbg4aVxKuuf37fO_y/exec"; // <-- แปะ URL ที่ได้จากการ Deploy
+
+let medicalTools = [];
+let editingIndex = -1;
+let currentPreviewDataURL = null; // เก็บ base64 จาก input file
+
+// ตั้งค่าเวลาปัจจุบันตอนโหลดหน้า
+document.addEventListener('DOMContentLoaded', function() {
+  setNowToReceiveDateTime();
+  loadData(); // ดึงข้อมูลจากชีต
+});
+
+function setNowToReceiveDateTime(){
+  const now = new Date();
+  const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  document.getElementById('receiveDateTime').value = localDateTime;
+}
+
+// Preview รูปและเก็บ DataURL (base64)
+document.getElementById('toolImage').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) {
+    currentPreviewDataURL = null;
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const dataURL = evt.target.result;
+    currentPreviewDataURL = dataURL; // เก็บไว้ส่งให้ GAS
+    document.getElementById('previewImg').src = dataURL;
+    document.getElementById('imagePreview').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+});
+
+// โหลดข้อมูลทั้งหมดจากชีต
+async function loadData() {
+  try {
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'list' })
+    });
+    const json = await res.json();
+    if (json.success) {
+      medicalTools = json.data || [];
+      updateTable();
+    } else {
+      alert('โหลดข้อมูลไม่สำเร็จ: ' + (json.message || 'ไม่ทราบสาเหตุ'));
+    }
+  } catch (err) {
+    console.error(err);
+    alert('โหลดข้อมูลไม่สำเร็จ (ตรวจสอบการเชื่อมต่อหรือ CORS)');
+  }
+}
+
+// บันทึกฟอร์ม -> เพิ่มข้อมูลใหม่
+document.getElementById('medicalToolForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const payload = {
+    action: 'create',
+    record: {
+      companyName: document.getElementById('companyName').value.trim(),
+      toolType: document.getElementById('toolType').value.trim(),
+      quantity: Number(document.getElementById('quantity').value || '0'),
+      sterileStatus: document.getElementById('sterileStatus').value,
+      surgeon: document.getElementById('surgeon').value.trim(),
+      surgeryDate: document.getElementById('surgeryDate').value, // yyyy-MM-dd
+      receiveDateTime: document.getElementById('receiveDateTime').value, // yyyy-MM-ddTHH:mm
+      receiver: document.getElementById('receiver').value.trim()
+    },
+    image: currentPreviewDataURL // อาจเป็น null ถ้าไม่เลือกรูป
+  };
+
+  try {
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+      resetForm();
+      loadData();
+    } else {
+      alert('บันทึกไม่สำเร็จ: ' + (json.message || 'ไม่ทราบสาเหตุ'));
+    }
+  } catch (err) {
+    console.error(err);
+    alert('บันทึกไม่สำเร็จ (ตรวจสอบการเชื่อมต่อหรือ CORS)');
+  }
+});
+
+function resetForm() {
+  document.getElementById('medicalToolForm').reset();
+  document.getElementById('imagePreview').classList.add('hidden');
+  currentPreviewDataURL = null;
+  setNowToReceiveDateTime();
+}
+
+// อัปเดตตาราง
+function updateTable() {
+  const tbody = document.getElementById('dataTableBody');
+  const noDataRow = document.getElementById('noDataRow');
+  const recordCount = document.getElementById('recordCount');
+
+  if (!medicalTools || medicalTools.length === 0) {
+    tbody.innerHTML = `
+      <tr id="noDataRow">
+        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+          <i class="fas fa-inbox text-4xl mb-2 block"></i>ยังไม่มีข้อมูล
+        </td>
+      </tr>`;
+    recordCount.textContent = '0 รายการ';
+    return;
+  }
+
+  recordCount.textContent = `${medicalTools.length} รายการ`;
+  tbody.innerHTML = '';
+
+  medicalTools.forEach((tool, index) => {
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-50';
+
+    const sDate = tool.surgeryDate ? new Date(tool.surgeryDate).toLocaleDateString('th-TH') : '-';
+    const rDate = tool.receiveDateTime ? new Date(tool.receiveDateTime).toLocaleString('th-TH') : '-';
+
+    row.innerHTML = `
+      <td class="px-4 py-3 text-sm">${index + 1}</td>
+      <td class="px-4 py-3 text-sm">${tool.companyName || ''}</td>
+      <td class="px-4 py-3 text-sm">${tool.toolType || ''}</td>
+      <td class="px-4 py-3 text-sm">${tool.quantity ?? ''}</td>
+      <td class="px-4 py-3 text-sm">
+        <span class="px-2 py-1 rounded-full text-xs ${tool.sterileStatus === 'Sterile มาแล้ว' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+          ${tool.sterileStatus || ''}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-sm">${tool.surgeon || ''}</td>
+      <td class="px-4 py-3 text-sm">
+        ${tool.imageUrl ? `<button onclick="showImage('${tool.imageUrl}')" class="text-blue-600 hover:text-blue-800"><i class="fas fa-image"></i> ดูรูป</button>` : 'ไม่มีรูป'}
+      </td>
+      <td class="px-4 py-3 text-sm">
+        <div class="flex gap-2">
+          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// Modal รูป
+function showImage(imageSrc) {
+  document.getElementById('modalImage').src = imageSrc;
+  document.getElementById('imageModal').classList.remove('hidden');
+}
+function closeImageModal() {
+  document.getElementById('imageModal').classList.add('hidden');
+}
+document.getElementById('imageModal').addEventListener('click', function(e) {
+  if (e.target === this) closeImageModal();
+});
+
+// แก้ไข
+function editTool(index) {
+  editingIndex = index;
+  const tool = medicalTools[index];
+  document.getElementById('editIndex').value = index;
+  document.getElementById('editCompanyName').value = tool.companyName || '';
+  document.getElementById('editToolType').value = tool.toolType || '';
+  document.getElementById('editQuantity').value = tool.quantity ?? 1;
+  document.getElementById('editSterileStatus').value = tool.sterileStatus || 'ต้องทำ Sterile';
+  document.getElementById('editSurgeon').value = tool.surgeon || '';
+  document.getElementById('editSurgeryDate').value = (tool.surgeryDate || '').split('T')[0] || '';
+  document.getElementById('editReceiver').value = tool.receiver || '';
+  document.getElementById('editModal').classList.remove('hidden');
+}
+function closeEditModal() {
+  document.getElementById('editModal').classList.add('hidden');
+  editingIndex = -1;
+}
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+
+// ส่งแก้ไขไป GAS
+document.getElementById('editForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const index = parseInt(document.getElementById('editIndex').value, 10);
+  const row = medicalTools[index];
+  if (!row || !row.id) {
+    alert('ไม่พบข้อมูลรายการที่จะอัปเดต');
+    return;
+  }
+  const payload = {
+    action: 'update',
+    id: row.id,
+    record: {
+      companyName: document.getElementById('editCompanyName').value.trim(),
+      toolType: document.getElementById('editToolType').value.trim(),
+      quantity: Number(document.getElementById('editQuantity').value || '0'),
+      sterileStatus: document.getElementById('editSterileStatus').value,
+      surgeon: document.getElementById('editSurgeon').value.trim(),
+      surgeryDate: document.getElementById('editSurgeryDate').value,
+      receiver: document.getElementById('editReceiver').value.trim()
+    }
+  };
+  try {
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert('แก้ไขข้อมูลเรียบร้อยแล้ว');
+      closeEditModal();
+      loadData();
+    } else {
+      alert('อัปเดตไม่สำเร็จ: ' + (json.message || 'ไม่ทราบสาเหตุ'));
+    }
+  } catch (err) {
+    console.error(err);
+    alert('อัปเดตไม่สำเร็จ (ตรวจสอบการเชื่อมต่อหรือ CORS)');
+  }
+});
+
+// ลบ
+async function deleteTool(index) {
+  const row = medicalTools[index];
+  if (!row || !row.id) {
+    alert('ไม่พบข้อมูลรายการที่จะลบ');
+    return;
+  }
+  if (!confirm('คุณต้องการลบข้อมูลนี้หรือไม่?')) return;
+
+  try {
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', id: row.id })
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert('ลบข้อมูลเรียบร้อยแล้ว');
+      loadData();
+    } else {
+      alert('ลบไม่สำเร็จ: ' + (json.message || 'ไม่ทราบสาเหตุ'));
+    }
+  } catch (err) {
+    console.error(err);
+    alert('ลบไม่สำเร็จ (ตรวจสอบการเชื่อมต่อหรือ CORS)');
+  }
+}
+</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'983051b726d3d32c',t:'MTc1ODUyODU1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
