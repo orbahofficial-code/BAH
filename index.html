@@ -527,33 +527,67 @@ function driveThumbUrl(url){
 }
 
 
-function openImageModal(url){
-  url = (url || '').trim();           // <<<<<< ตัดช่องว่าง
+// ดักคลิกปุ่ม "ดูรูป"
+document.getElementById('dataTableBody').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action="view-image"]');
+  if (!btn) return;
+
+  const idx = Number(btn.dataset.idx);
+  const raw = (((medicalTools[idx] || {}).imageUrl) || '').toString().trim();
+  openImageModal(raw);
+});
+
+function openImageModal(rawUrl){
   const modal = document.getElementById('imageModal');
   const img   = document.getElementById('modalImage');
 
-  img.removeAttribute('src');
-  img.alt = 'กำลังโหลดรูป...';
-  img.style.opacity = '0.2';
   modal.classList.remove('hidden');
 
-  if (!url) {                         // กันกรณีว่างจริง ๆ
+  // reset ภาพก่อนโหลด
+  img.src = '';
+  img.alt = 'กำลังโหลดรูป...';
+  img.style.opacity = '0.25';
+  img.referrerPolicy = 'no-referrer';
+
+  if (!rawUrl) {
     img.alt = 'ไม่พบ URL ของรูปภาพ';
     img.style.opacity = '1';
+    console.warn('openImageModal: empty URL');
     return;
   }
 
-  const loader = new Image();
-  loader.onload = () => { img.src = url; img.alt=''; img.style.opacity='1'; };
-  loader.onerror = () => { img.removeAttribute('src'); img.alt='ไม่สามารถแสดงรูปได้'; img.style.opacity='1'; };
-  loader.src = url;
+  // สร้าง URL สำหรับ <img> + กัน cache
+  const primary  = driveEmbedUrl(rawUrl);
+  const fallback = driveThumbUrl(rawUrl);
+  let usedFallback = false;
+
+  const setSrc = (u) => {
+    const bust = (u.includes('?') ? '&' : '?') + 't=' + Date.now();
+    img.src = u + bust;
+  };
+
+  // onload/onerror
+  img.onload = () => {
+    console.log('modalImage onload ✓', usedFallback ? '(fallback)' : '(primary)');
+    img.alt = '';
+    img.style.opacity = '1';
+  };
+  img.onerror = () => {
+    if (!usedFallback) {
+      console.warn('primary image failed, try fallback thumbnail');
+      usedFallback = true;
+      setSrc(fallback);
+    } else {
+      console.error('fallback image failed too');
+      img.src = '';
+      img.alt = 'ไม่สามารถแสดงรูปได้ (ตรวจสิทธิ์ไฟล์ใน Drive)';
+      img.style.opacity = '1';
+    }
+  };
+
+  // เริ่มลองด้วย primary ก่อน
+  setSrc(primary);
 }
-
-
-// ปิด Modal เมื่อคลิกพื้นหลัง
-document.getElementById('imageModal').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.add('hidden');
-});
 
 
 </script>
