@@ -391,18 +391,12 @@ function updateTable() {
     row.className = 'hover:bg-gray-50';
 
     const imgCell = tool.imageUrl
-      ? `<div class="flex gap-3 items-center">
-           <button type="button"
-                   class="text-blue-600 hover:text-blue-800"
-                   data-action="view-image"
-                   data-url="${escAttr(tool.imageUrl)}">
-             <i class="fas fa-image"></i> ดูรูป
-           </button>
-           <a href="${escAttr(tool.imageUrl)}" target="_blank"
-              class="text-gray-600 hover:text-gray-800 underline">
-              เปิดลิงก์
-           </a>
-         </div>`
+      ? `<button type="button"
+                 class="text-blue-600 hover:text-blue-800"
+                 data-action="view-image"
+                 data-url="${escAttr(tool.imageUrl)}">
+           <i class="fas fa-image"></i> ดูรูป
+         </button>`
       : 'ไม่มีรูป';
 
     row.innerHTML = `
@@ -419,17 +413,14 @@ function updateTable() {
       <td class="px-4 py-3 text-sm">${imgCell}</td>
       <td class="px-4 py-3 text-sm">
         <div class="flex gap-2">
-          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ">
-            <i class="fas fa-trash"></i>
-          </button>
+          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
+          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
         </div>
       </td>`;
     tbody.appendChild(row);
   });
 }
+
 
 
 // ---------- modal รูป ----------
@@ -489,13 +480,47 @@ async function deleteTool(index){
   await loadData();
 }
 
-// เปิดรูปผ่าน Modal ด้วย event delegation (ปลอดภัยกว่า inline onclick)
+// ดักคลิกปุ่มดูรูป ทั้งหมดในตาราง
 document.getElementById('dataTableBody').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-action="view-image"]');
   if (!btn) return;
   const url = btn.dataset.url || '';
-  showImage(url); // ฟังก์ชันเดิมของคุณ ที่เซ็ต src แล้วเปิด modal
+  openImageModal(url);
 });
+
+// เปิดรูปใน Modal แบบมีสถานะโหลด + จัดการ error
+function openImageModal(url){
+  const modal = document.getElementById('imageModal');
+  const img   = document.getElementById('modalImage');
+
+  // แสดงสถานะกำลังโหลด (แทนรูปชั่วคราว)
+  img.removeAttribute('src');
+  img.alt = 'กำลังโหลดรูป...';
+  img.style.opacity = '0.2';
+
+  // เปิด Modal ก่อน แล้วค่อยเปลี่ยน src
+  modal.classList.remove('hidden');
+
+  // โหลดรูปใหม่แบบชัวร์ ๆ
+  const loader = new Image();
+  loader.onload = () => {
+    img.src = url;
+    img.alt = '';
+    img.style.opacity = '1';
+  };
+  loader.onerror = () => {
+    img.removeAttribute('src');
+    img.alt = 'ไม่สามารถแสดงรูปได้ (ตรวจสิทธิ์ไฟล์ใน Drive)';
+    img.style.opacity = '1';
+  };
+  loader.src = url; // เริ่มโหลด
+}
+
+// ปิด Modal เมื่อคลิกพื้นหลัง
+document.getElementById('imageModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.add('hidden');
+});
+
 
 </script>
 
