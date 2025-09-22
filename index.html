@@ -264,6 +264,14 @@ let medicalTools = [];
 let editingIndex = -1;
 let currentPreviewDataURL = null;
 
+// escape สำหรับฝัง URL ใน attribute ให้ปลอดภัย
+function escAttr(s){
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;');
+}
+
 // ---------- helper เรียก API แบบ form-urlencoded + ดีบัก ----------
 async function callApi(payload) {
   const form = new URLSearchParams();
@@ -377,9 +385,26 @@ function updateTable() {
 
   recordCount.textContent = `${medicalTools.length} รายการ`;
   tbody.innerHTML = '';
+
   medicalTools.forEach((tool, index) => {
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
+
+    const imgCell = tool.imageUrl
+      ? `<div class="flex gap-3 items-center">
+           <button type="button"
+                   class="text-blue-600 hover:text-blue-800"
+                   data-action="view-image"
+                   data-url="${escAttr(tool.imageUrl)}">
+             <i class="fas fa-image"></i> ดูรูป
+           </button>
+           <a href="${escAttr(tool.imageUrl)}" target="_blank"
+              class="text-gray-600 hover:text-gray-800 underline">
+              เปิดลิงก์
+           </a>
+         </div>`
+      : 'ไม่มีรูป';
+
     row.innerHTML = `
       <td class="px-4 py-3 text-sm">${index + 1}</td>
       <td class="px-4 py-3 text-sm">${tool.companyName || ''}</td>
@@ -391,25 +416,21 @@ function updateTable() {
         </span>
       </td>
       <td class="px-4 py-3 text-sm">${tool.surgeon || ''}</td>
-        <td class="px-4 py-3 text-sm">
-          ${tool.imageUrl
-            ? `<div class="flex gap-3">
-                 <button onclick="showImage('${tool.imageUrl}')" class="text-blue-600 hover:text-blue-800">
-                   <i class="fas fa-image"></i> ดูรูป
-                 </button>
-                 <a href="${tool.imageUrl}" target="_blank" class="text-gray-600 hover:text-gray-800 underline">เปิดลิงก์</a>
-               </div>`
-            : 'ไม่มีรูป'}
-        </td>
+      <td class="px-4 py-3 text-sm">${imgCell}</td>
       <td class="px-4 py-3 text-sm">
         <div class="flex gap-2">
-          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
-          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
+          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ">
+            <i class="fas fa-trash"></i>
+          </button>
         </div>
       </td>`;
     tbody.appendChild(row);
   });
 }
+
 
 // ---------- modal รูป ----------
 function showImage(src){ document.getElementById('modalImage').src = src; document.getElementById('imageModal').classList.remove('hidden'); }
@@ -467,6 +488,15 @@ async function deleteTool(index){
   alert('ลบข้อมูลเรียบร้อยแล้ว');
   await loadData();
 }
+
+// เปิดรูปผ่าน Modal ด้วย event delegation (ปลอดภัยกว่า inline onclick)
+document.getElementById('dataTableBody').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action="view-image"]');
+  if (!btn) return;
+  const url = btn.dataset.url || '';
+  showImage(url); // ฟังก์ชันเดิมของคุณ ที่เซ็ต src แล้วเปิด modal
+});
+
 </script>
 
 </html>
