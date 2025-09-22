@@ -257,21 +257,48 @@
         </div>
     </footer>
 
-    <script>
-/** =========================
- *  ตั้งค่า API_BASE เป็น URL Web App ของ Google Apps Script
- *  ตัวอย่าง: const API_BASE = "https://script.google.com/macros/s/AKfycbx.../exec";
- ========================== */
-const API_BASE = "https://script.google.com/macros/s/AKfycbzxLfUJIwFPEixuoERmew6L2g3mjRs6R0hAcdKRmDM9nibBVU7xbg4aVxKuuf37fO_y/exec"; // <-- แปะ URL ที่ได้จากการ Deploy
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbzxLfUJIwFPEixuoERmew6L2g3mjRs6R0hAcdKRmDM9nibBVU7xbg4aVxKuuf37fO_y/exec"; // ต้องเป็น .../exec
 
 let medicalTools = [];
 let editingIndex = -1;
-let currentPreviewDataURL = null; // เก็บ base64 จาก input file
+let currentPreviewDataURL = null;
 
-// ตั้งค่าเวลาปัจจุบันตอนโหลดหน้า
-document.addEventListener('DOMContentLoaded', function() {
+// ---------- helper เรียก API แบบ form-urlencoded + ดีบัก ----------
+async function callApi(payload) {
+  const form = new URLSearchParams();
+  form.append("payload", JSON.stringify(payload));
+
+  const res = await fetch(API_BASE, {
+    method: "POST",
+    body: form   // ไม่ตั้ง headers -> เบราว์เซอร์ใส่ application/x-www-form-urlencoded ให้เอง
+  });
+
+  const text = await res.text();       // เก็บ text ไว้ดีบัก
+  // แสดงสถานะใน console เพื่อไล่ปัญหาได้เลย
+  console.log("API status:", res.status, "body:", text);
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} - ${text.slice(0, 200)}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new Error("Invalid JSON from API: " + text.slice(0, 300));
+  }
+}
+
+// ---------- ตั้งเวลาเริ่มต้น ----------
+document.addEventListener('DOMContentLoaded', async function() {
   setNowToReceiveDateTime();
-  loadData(); // ดึงข้อมูลจากชีต
+  // ping ให้รู้ว่า endpoint ใช้งานได้ไหม
+  try {
+    const pong = await callApi({ action: "ping" });
+    console.log("ping:", pong);
+    await loadData();
+  } catch (err) {
+    alert("API มีปัญหา: " + err.message + "\nโปรดตรวจ URL / สิทธิ์ของ Web App");
+  }
 });
 
 function setNowToReceiveDateTime(){
@@ -280,45 +307,28 @@ function setNowToReceiveDateTime(){
   document.getElementById('receiveDateTime').value = localDateTime;
 }
 
-// Preview รูปและเก็บ DataURL (base64)
+// ---------- preview รูป ----------
 document.getElementById('toolImage').addEventListener('change', function(e) {
   const file = e.target.files[0];
-  if (!file) {
-    currentPreviewDataURL = null;
-    return;
-  }
+  if (!file) { currentPreviewDataURL = null; return; }
   const reader = new FileReader();
-  reader.onload = function(evt) {
-    const dataURL = evt.target.result;
-    currentPreviewDataURL = dataURL; // เก็บไว้ส่งให้ GAS
-    document.getElementById('previewImg').src = dataURL;
+  reader.onload = evt => {
+    currentPreviewDataURL = evt.target.result;
+    document.getElementById('previewImg').src = currentPreviewDataURL;
     document.getElementById('imagePreview').classList.remove('hidden');
   };
   reader.readAsDataURL(file);
 });
 
-// โหลดข้อมูลทั้งหมดจากชีต
+// ---------- โหลดรายการ ----------
 async function loadData() {
-  try {
-    const res = await fetch(API_BASE, {
-      method: 'POST',
-     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-     body: JSON.stringify(payload)
-    });
-    const json = await res.json();
-    if (json.success) {
-      medicalTools = json.data || [];
-      updateTable();
-    } else {
-      alert('โหลดข้อมูลไม่สำเร็จ: ' + (json.message || 'ไม่ทราบสาเหตุ'));
-    }
-  } catch (err) {
-    console.error(err);
-    alert('โหลดข้อมูลไม่สำเร็จ (ตรวจสอบการเชื่อมต่อหรือ CORS)');
-  }
+  const json = await callApi({ action: "list" });
+  if (!json.success) throw new Error(json.message || "list failed");
+  medicalTools = json.data || [];
+  updateTable();
 }
 
-// บันทึกฟอร์ม -> เพิ่มข้อมูลใหม่
+// ---------- บันทึกใหม่ ----------
 document.getElementById('medicalToolForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   const payload = {
@@ -329,31 +339,17 @@ document.getElementById('medicalToolForm').addEventListener('submit', async func
       quantity: Number(document.getElementById('quantity').value || '0'),
       sterileStatus: document.getElementById('sterileStatus').value,
       surgeon: document.getElementById('surgeon').value.trim(),
-      surgeryDate: document.getElementById('surgeryDate').value, // yyyy-MM-dd
-      receiveDateTime: document.getElementById('receiveDateTime').value, // yyyy-MM-ddTHH:mm
+      surgeryDate: document.getElementById('surgeryDate').value,
+      receiveDateTime: document.getElementById('receiveDateTime').value,
       receiver: document.getElementById('receiver').value.trim()
     },
-    image: currentPreviewDataURL // อาจเป็น null ถ้าไม่เลือกรูป
+    image: currentPreviewDataURL // อาจเป็น null
   };
-
-  try {
-    const res = await fetch(API_BASE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json();
-    if (json.success) {
-      alert('บันทึกข้อมูลเรียบร้อยแล้ว');
-      resetForm();
-      loadData();
-    } else {
-      alert('บันทึกไม่สำเร็จ: ' + (json.message || 'ไม่ทราบสาเหตุ'));
-    }
-  } catch (err) {
-    console.error(err);
-    alert('บันทึกไม่สำเร็จ (ตรวจสอบการเชื่อมต่อหรือ CORS)');
-  }
+  const json = await callApi(payload);
+  if (!json.success) throw new Error(json.message || "create failed");
+  alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+  resetForm();
+  await loadData();
 });
 
 function resetForm() {
@@ -363,13 +359,12 @@ function resetForm() {
   setNowToReceiveDateTime();
 }
 
-// อัปเดตตาราง
+// ---------- ตาราง ----------
 function updateTable() {
   const tbody = document.getElementById('dataTableBody');
-  const noDataRow = document.getElementById('noDataRow');
   const recordCount = document.getElementById('recordCount');
 
-  if (!medicalTools || medicalTools.length === 0) {
+  if (!medicalTools.length) {
     tbody.innerHTML = `
       <tr id="noDataRow">
         <td colspan="8" class="px-4 py-8 text-center text-gray-500">
@@ -382,14 +377,9 @@ function updateTable() {
 
   recordCount.textContent = `${medicalTools.length} รายการ`;
   tbody.innerHTML = '';
-
   medicalTools.forEach((tool, index) => {
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
-
-    const sDate = tool.surgeryDate ? new Date(tool.surgeryDate).toLocaleDateString('th-TH') : '-';
-    const rDate = tool.receiveDateTime ? new Date(tool.receiveDateTime).toLocaleString('th-TH') : '-';
-
     row.innerHTML = `
       <td class="px-4 py-3 text-sm">${index + 1}</td>
       <td class="px-4 py-3 text-sm">${tool.companyName || ''}</td>
@@ -406,32 +396,20 @@ function updateTable() {
       </td>
       <td class="px-4 py-3 text-sm">
         <div class="flex gap-2">
-          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ">
-            <i class="fas fa-trash"></i>
-          </button>
+          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
+          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
         </div>
-      </td>
-    `;
+      </td>`;
     tbody.appendChild(row);
   });
 }
 
-// Modal รูป
-function showImage(imageSrc) {
-  document.getElementById('modalImage').src = imageSrc;
-  document.getElementById('imageModal').classList.remove('hidden');
-}
-function closeImageModal() {
-  document.getElementById('imageModal').classList.add('hidden');
-}
-document.getElementById('imageModal').addEventListener('click', function(e) {
-  if (e.target === this) closeImageModal();
-});
+// ---------- modal รูป ----------
+function showImage(src){ document.getElementById('modalImage').src = src; document.getElementById('imageModal').classList.remove('hidden'); }
+function closeImageModal(){ document.getElementById('imageModal').classList.add('hidden'); }
+document.getElementById('imageModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeImageModal(); });
 
-// แก้ไข
+// ---------- edit ----------
 function editTool(index) {
   editingIndex = index;
   const tool = medicalTools[index];
@@ -445,24 +423,15 @@ function editTool(index) {
   document.getElementById('editReceiver').value = tool.receiver || '';
   document.getElementById('editModal').classList.remove('hidden');
 }
-function closeEditModal() {
-  document.getElementById('editModal').classList.add('hidden');
-  editingIndex = -1;
-}
-document.getElementById('editModal').addEventListener('click', function(e) {
-  if (e.target === this) closeEditModal();
-});
+function closeEditModal(){ document.getElementById('editModal').classList.add('hidden'); editingIndex = -1; }
+document.getElementById('editModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeEditModal(); });
 
-// ส่งแก้ไขไป GAS
-document.getElementById('editForm').addEventListener('submit', async function(e) {
+document.getElementById('editForm').addEventListener('submit', async function(e){
   e.preventDefault();
-  const index = parseInt(document.getElementById('editIndex').value, 10);
-  const row = medicalTools[index];
-  if (!row || !row.id) {
-    alert('ไม่พบข้อมูลรายการที่จะอัปเดต');
-    return;
-  }
-  const payload = {
+  const idx = parseInt(document.getElementById('editIndex').value, 10);
+  const row = medicalTools[idx];
+  if (!row || !row.id) { alert('ไม่พบข้อมูลรายการที่จะอัปเดต'); return; }
+  const json = await callApi({
     action: 'update',
     id: row.id,
     record: {
@@ -472,55 +441,25 @@ document.getElementById('editForm').addEventListener('submit', async function(e)
       sterileStatus: document.getElementById('editSterileStatus').value,
       surgeon: document.getElementById('editSurgeon').value.trim(),
       surgeryDate: document.getElementById('editSurgeryDate').value,
+      receiveDateTime: row.receiveDateTime, // เก็บของเดิม
       receiver: document.getElementById('editReceiver').value.trim()
     }
-  };
-  try {
-    const res = await fetch(API_BASE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json();
-    if (json.success) {
-      alert('แก้ไขข้อมูลเรียบร้อยแล้ว');
-      closeEditModal();
-      loadData();
-    } else {
-      alert('อัปเดตไม่สำเร็จ: ' + (json.message || 'ไม่ทราบสาเหตุ'));
-    }
-  } catch (err) {
-    console.error(err);
-    alert('อัปเดตไม่สำเร็จ (ตรวจสอบการเชื่อมต่อหรือ CORS)');
-  }
+  });
+  if (!json.success) throw new Error(json.message || "update failed");
+  alert('แก้ไขข้อมูลเรียบร้อยแล้ว');
+  closeEditModal();
+  await loadData();
 });
 
-// ลบ
-async function deleteTool(index) {
+async function deleteTool(index){
   const row = medicalTools[index];
-  if (!row || !row.id) {
-    alert('ไม่พบข้อมูลรายการที่จะลบ');
-    return;
-  }
+  if (!row || !row.id) { alert('ไม่พบข้อมูลรายการที่จะลบ'); return; }
   if (!confirm('คุณต้องการลบข้อมูลนี้หรือไม่?')) return;
-
-  try {
-    const res = await fetch(API_BASE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json();
-    if (json.success) {
-      alert('ลบข้อมูลเรียบร้อยแล้ว');
-      loadData();
-    } else {
-      alert('ลบไม่สำเร็จ: ' + (json.message || 'ไม่ทราบสาเหตุ'));
-    }
-  } catch (err) {
-    console.error(err);
-    alert('ลบไม่สำเร็จ (ตรวจสอบการเชื่อมต่อหรือ CORS)');
-  }
+  const json = await callApi({ action: 'delete', id: row.id });
+  if (!json.success) throw new Error(json.message || "delete failed");
+  alert('ลบข้อมูลเรียบร้อยแล้ว');
+  await loadData();
 }
 </script>
+
 </html>
