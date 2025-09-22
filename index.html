@@ -493,9 +493,13 @@ async function deleteTool(index){
 document.getElementById('dataTableBody').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-action="view-image"]');
   if (!btn) return;
-  const url = btn.dataset.url || '';
+
+  const idx = Number(btn.dataset.idx);
+  const url = ((medicalTools[idx] && medicalTools[idx].imageUrl) || '').toString().trim();
+
   openImageModal(url);
 });
+
 
 function openImageModal(url){
   url = (url || '').trim();           // <<<<<< ตัดช่องว่าง
