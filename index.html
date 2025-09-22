@@ -272,6 +272,32 @@ function escAttr(s){
     .replace(/</g,'&lt;');
 }
 
+    // ดึง fileId จากหลายรูปแบบลิงก์ของ Google Drive
+function extractDriveId(url){
+  url = (url || '').trim();
+  if (!url) return null;
+  let m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);   // ...?id=FILE_ID
+  if (m) return m[1];
+  m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);         // .../file/d/FILE_ID/...
+  if (m) return m[1];
+  return null;
+}
+
+// URL สำหรับฝังใน <img>
+function driveEmbedUrl(url){
+  const id = extractDriveId(url);
+  if (!id) return (url || '').trim();
+  // ใช้ uc แบบดูไฟล์
+  return `https://drive.google.com/uc?export=view&id=${id}`;
+}
+
+// URL สำรอง (มักขึ้นเสถียรกว่าในบางโดเมน)
+function driveThumbUrl(url){
+  const id = extractDriveId(url);
+  if (!id) return (url || '').trim();
+  return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
+}
+
 // ---------- helper เรียก API แบบ form-urlencoded + ดีบัก ----------
 async function callApi(payload) {
   const form = new URLSearchParams();
@@ -390,14 +416,13 @@ function updateTable() {
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
 
-    const companyName = (tool.companyName || '').toString().trim();
-    const toolType    = (tool.toolType || '').toString().trim();
+    const companyName = (tool.companyName || '').trim();
+    const toolType    = (tool.toolType || '').trim();
     const quantity    = tool.quantity ?? '';
-    const surgeon     = (tool.surgeon || '').toString().trim();
-    const statusText  = (tool.sterileStatus || '').toString().trim();
+    const surgeon     = (tool.surgeon || '').trim();
+    const statusText  = (tool.sterileStatus || '').trim();
     const statusClass = statusText === 'Sterile มาแล้ว'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800';
+      ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
 
     const hasImage = !!(tool.imageUrl && String(tool.imageUrl).trim());
 
@@ -412,10 +437,8 @@ function updateTable() {
       <td class="px-4 py-3 text-sm">${surgeon}</td>
       <td class="px-4 py-3 text-sm">
         ${hasImage
-          ? `<button type="button"
-                     class="text-blue-600 hover:text-blue-800"
-                     data-action="view-image"
-                     data-idx="${index}">
+          ? `<button type="button" class="text-blue-600 hover:text-blue-800"
+                     data-action="view-image" data-idx="${index}">
                <i class="fas fa-image"></i> ดูรูป
              </button>`
           : 'ไม่มีรูป'}
@@ -425,8 +448,7 @@ function updateTable() {
           <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
           <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
         </div>
-      </td>
-    `;
+      </td>`;
     tbody.appendChild(row);
   });
 }
@@ -489,49 +511,10 @@ async function deleteTool(index){
   await loadData();
 }
 
-// ดักคลิกปุ่มดูรูป ทั้งหมดในตาราง
+// ดักคลิกปุ่ม "ดูรูป" (ไม่พึ่งพา URL ใน attribute)
 document.getElementById('dataTableBody').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-action="view-image"]');
   if (!btn) return;
-
-  const idx = Number(btn.dataset.idx);
-  const url = ((medicalTools[idx] && medicalTools[idx].imageUrl) || '').toString().trim();
-
-  openImageModal(url);
-});
-
-    // ดึง fileId จากหลากหลายรูปแบบลิงก์ของ Google Drive
-function extractDriveId(url){
-  url = (url || '').trim();
-  if (!url) return null;
-  let m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);      // ...?id=FILE_ID
-  if (m) return m[1];
-  m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);           // .../file/d/FILE_ID/...
-  if (m) return m[1];
-  return null;
-}
-
-// สร้าง URL สำหรับฝังรูปใน <img>
-function driveEmbedUrl(url){
-  const id = extractDriveId(url);
-  if (!id) return (url || '').trim();
-  return `https://drive.google.com/uc?export=view&id=${id}`;
-}
-
-// URL สำรอง (thumbnail) — มักโหลดติดแม้ uc บางครั้งจะงอแง
-function driveThumbUrl(url){
-  const id = extractDriveId(url);
-  if (!id) return (url || '').trim();
-  // sz=w2000 ให้ขนาดใหญ่พอใน modal
-  return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
-}
-
-
-// ดักคลิกปุ่ม "ดูรูป"
-document.getElementById('dataTableBody').addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-action="view-image"]');
-  if (!btn) return;
-
   const idx = Number(btn.dataset.idx);
   const raw = (((medicalTools[idx] || {}).imageUrl) || '').toString().trim();
   openImageModal(raw);
@@ -543,7 +526,7 @@ function openImageModal(rawUrl){
 
   modal.classList.remove('hidden');
 
-  // reset ภาพก่อนโหลด
+  // reset state
   img.src = '';
   img.alt = 'กำลังโหลดรูป...';
   img.style.opacity = '0.25';
@@ -556,22 +539,21 @@ function openImageModal(rawUrl){
     return;
   }
 
-  // สร้าง URL สำหรับ <img> + กัน cache
-  const primary  = driveEmbedUrl(rawUrl);
-  const fallback = driveThumbUrl(rawUrl);
+  const primary  = driveEmbedUrl(rawUrl);   // สร้าง URL มาตรฐาน
+  const fallback = driveThumbUrl(rawUrl);   // URL สำรอง
   let usedFallback = false;
 
   const setSrc = (u) => {
-    const bust = (u.includes('?') ? '&' : '?') + 't=' + Date.now();
+    const bust = (u.includes('?') ? '&' : '?') + 't=' + Date.now(); // กัน cache
     img.src = u + bust;
   };
 
-  // onload/onerror
   img.onload = () => {
     console.log('modalImage onload ✓', usedFallback ? '(fallback)' : '(primary)');
     img.alt = '';
     img.style.opacity = '1';
   };
+
   img.onerror = () => {
     if (!usedFallback) {
       console.warn('primary image failed, try fallback thumbnail');
@@ -580,14 +562,18 @@ function openImageModal(rawUrl){
     } else {
       console.error('fallback image failed too');
       img.src = '';
-      img.alt = 'ไม่สามารถแสดงรูปได้ (ตรวจสิทธิ์ไฟล์ใน Drive)';
+      img.alt = 'ไม่สามารถแสดงรูปได้ (สิทธิ์ไฟล์/ลิงก์ผิด หรือไม่ใช่ไฟล์รูป)';
       img.style.opacity = '1';
     }
   };
 
-  // เริ่มลองด้วย primary ก่อน
+  console.log('openImageModal URL(primary):', primary);
   setSrc(primary);
 }
+
+
+
+
 
 
 </script>
