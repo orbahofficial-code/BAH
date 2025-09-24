@@ -219,6 +219,7 @@
                         <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จำนวน</th>
                         <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">สถานะ</th>
                         <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">แพทย์</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ผู้รับเครื่องมือ</th>
                         <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">วันที่รับเครื่องมือ</th>
                         <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">วันที่ผ่าตัด</th>
                         <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">รูปภาพ</th>
@@ -227,7 +228,7 @@
                     </thead>
                     <tbody id="dataTableBody" class="divide-y divide-gray-200">
                         <tr id="noDataRow">
-                            <td colspan="10" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="11" class="px-4 py-8 text-center text-gray-500">
                                 <i class="fas fa-inbox text-4xl mb-2 block"></i>
                                 ยังไม่มีข้อมูล
                             </td>
@@ -657,7 +658,7 @@ function updateTable() {
   if (!Array.isArray(medicalTools) || medicalTools.length === 0) {
     tbody.innerHTML = `
       <tr id="noDataRow">
-        <td colspan="10" class="px-4 py-8 text-center text-gray-500">
+        <td colspan="11" class="px-4 py-8 text-center text-gray-500">
           <i class="fas fa-inbox text-4xl mb-2 block"></i>ยังไม่มีข้อมูล
         </td>
       </tr>`;
@@ -665,17 +666,18 @@ function updateTable() {
     return;
   }
 
-  // ✅ เรียง: ล่าสุดอยู่บนสุด (รับเครื่องมือ > ผ่าตัด)
+  // เรียงล่าสุดบนสุด (รับเครื่องมือ > ผ่าตัด)
   const data = [...medicalTools].sort((a, b) => getSortEpoch(b) - getSortEpoch(a));
 
   recordCount.textContent = `${data.length} รายการ`;
   tbody.innerHTML = '';
 
-  data.forEach((tool, index) => {
+  data.forEach((tool) => {
     const companyName = (tool.companyName || '').trim();
     const toolType    = (tool.toolType || '').trim();
     const quantity    = tool.quantity ?? '';
     const surgeon     = (tool.surgeon || '').trim();
+    const receiver    = (tool.receiver || '').trim(); // ✅ ผู้รับเครื่องมือ
     const statusText  = (tool.sterileStatus || '').trim();
     const statusClass = statusText === 'Sterile มาแล้ว'
       ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
@@ -684,10 +686,13 @@ function updateTable() {
     const receiveText = formatDateTimeTH(tool.receiveDateTime);
     const surgeryText = formatDateTH(tool.surgeryDate);
 
+    // ดัชนีจริงใน medicalTools (เพื่อใช้กับปุ่ม แก้ไข/ลบ/ดูรูป)
+    const realIndex = medicalTools.indexOf(tool);
+
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
     row.innerHTML = `
-      <td class="px-4 py-3 text-sm">${index + 1}</td>
+      <td class="px-4 py-3 text-sm">${realIndex + 1}</td>
       <td class="px-4 py-3 text-sm">${companyName}</td>
       <td class="px-4 py-3 text-sm">${toolType}</td>
       <td class="px-4 py-3 text-sm">${quantity}</td>
@@ -695,26 +700,26 @@ function updateTable() {
         <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span>
       </td>
       <td class="px-4 py-3 text-sm">${surgeon}</td>
+      <td class="px-4 py-3 text-sm">${receiver || '-'}</td>        <!-- ✅ ผู้รับเครื่องมือ -->
       <td class="px-4 py-3 text-sm whitespace-nowrap">${receiveText}</td>
       <td class="px-4 py-3 text-sm whitespace-nowrap">${surgeryText}</td>
       <td class="px-4 py-3 text-sm">
         ${hasImage
           ? `<button type="button" class="text-blue-600 hover:text-blue-800"
-                     data-action="view-image" data-idx="${medicalTools.indexOf(tool)}">
+                     data-action="view-image" data-idx="${realIndex}">
                <i class="fas fa-image"></i> ดูรูป
              </button>`
           : 'ไม่มีรูป'}
       </td>
       <td class="px-4 py-3 text-sm">
         <div class="flex gap-2">
-          <button onclick="editTool(${medicalTools.indexOf(tool)})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
-          <button onclick="deleteTool(${medicalTools.indexOf(tool)})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
+          <button onclick="editTool(${realIndex})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
+          <button onclick="deleteTool(${realIndex})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
         </div>
       </td>`;
     tbody.appendChild(row);
   });
 }
-
 
 /* ==============================
    IMAGE MODAL
