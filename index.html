@@ -529,6 +529,35 @@ function toEpoch(val){
 function getSortEpoch(row){
   return toEpoch(row.receiveDateTime) || toEpoch(row.surgeryDate) || 0;
 }
+// แปลงเป็น ISO แบบ "YYYY-MM-DD" เฉพาะวันที่
+function dateOnlyISO(val){
+  if (!val) return '';
+  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val; // already ISO date
+  // รองรับ dd/MM/yyyy
+  if (typeof val === 'string'){
+    const m = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  }
+  const d = new Date(val);
+  return isNaN(d) ? '' : d.toISOString().slice(0,10);
+}
+
+// เวลาสำหรับใช้เรียง (มิลลิวินาที)
+function toEpoch(val){
+  if (!val) return 0;
+  const d = new Date(val);
+  return isNaN(d) ? 0 : d.getTime();
+}
+
+function getGroupKeyISO(row){
+  return dateOnlyISO(row.surgeryDate) || dateOnlyISO(row.receiveDateTime) || '';
+}
+
+// ข้อความหัวข้อวัน (ไทย)
+function formatGroupTitle(keyISO){
+  if (!keyISO) return 'ไม่ระบุวันที่';
+  return formatDateTH(keyISO); // ใช้ helper formatDateTH ที่คุณมีอยู่แล้ว
+}
 
 
 /* ==============================
@@ -666,18 +695,52 @@ function updateTable() {
     return;
   }
 
-  // เรียงล่าสุดบนสุด (รับเครื่องมือ > ผ่าตัด)
-  const data = [...medicalTools].sort((a, b) => getSortEpoch(b) - getSortEpoch(a));
+  // ✅ เรียงกลุ่มวัน: ใหม่ → เก่า
+  //   ถ้าวันเดียวกัน เรียงตามเวลา (receiveDateTime > surgeryDate) ใหม่ → เก่า
+  const data = [...medicalTools].sort((a, b) => {
+    const ga = getGroupKeyISO(a);
+    const gb = getGroupKeyISO(b);
+    if (ga !== gb) return ga < gb ? 1 : -1; // วันใหม่มาก่อน
+    const ta = toEpoch(a.receiveDateTime) || toEpoch(a.surgeryDate);
+    const tb = toEpoch(b.receiveDateTime) || toEpoch(b.surgeryDate);
+    return tb - ta; // เวลาใหม่มาก่อน
+  });
 
   recordCount.textContent = `${data.length} รายการ`;
   tbody.innerHTML = '';
 
+  let currentGroup = '';
+  let seqInGroup = 0;
+
   data.forEach((tool) => {
+    const groupKey = getGroupKeyISO(tool);
+
+    // แทรกหัวข้อ "วันที่ ..." เมื่อเปลี่ยนวัน
+    if (groupKey !== currentGroup) {
+      currentGroup = groupKey;
+      seqInGroup = 0;
+      const heading = document.createElement('tr');
+      heading.className = 'bg-indigo-50';
+      heading.innerHTML = `
+        <td colspan="11" class="px-4 py-2 text-sm font-semibold text-gray-700">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3M5 8h14M5 21h14a2 2 0 002-2V8H3v11a2 2 0 002 2z"></path>
+            </svg>
+            <span>วันที่: ${formatGroupTitle(groupKey)}</span>
+          </div>
+        </td>`;
+      tbody.appendChild(heading);
+    }
+
+    seqInGroup += 1; // ลำดับภายในวัน
+
     const companyName = (tool.companyName || '').trim();
     const toolType    = (tool.toolType || '').trim();
     const quantity    = tool.quantity ?? '';
     const surgeon     = (tool.surgeon || '').trim();
-    const receiver    = (tool.receiver || '').trim(); // ✅ ผู้รับเครื่องมือ
+    const receiver    = (tool.receiver || '').trim();
     const statusText  = (tool.sterileStatus || '').trim();
     const statusClass = statusText === 'Sterile มาแล้ว'
       ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
@@ -686,13 +749,13 @@ function updateTable() {
     const receiveText = formatDateTimeTH(tool.receiveDateTime);
     const surgeryText = formatDateTH(tool.surgeryDate);
 
-    // ดัชนีจริงใน medicalTools (เพื่อใช้กับปุ่ม แก้ไข/ลบ/ดูรูป)
+    // index จริงใน medicalTools (ใช้กับปุ่มดูรูป/แก้ไข/ลบ)
     const realIndex = medicalTools.indexOf(tool);
 
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
     row.innerHTML = `
-      <td class="px-4 py-3 text-sm">${realIndex + 1}</td>
+      <td class="px-4 py-3 text-sm">${seqInGroup}</td>
       <td class="px-4 py-3 text-sm">${companyName}</td>
       <td class="px-4 py-3 text-sm">${toolType}</td>
       <td class="px-4 py-3 text-sm">${quantity}</td>
@@ -700,7 +763,7 @@ function updateTable() {
         <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span>
       </td>
       <td class="px-4 py-3 text-sm">${surgeon}</td>
-      <td class="px-4 py-3 text-sm">${receiver || '-'}</td>        <!-- ✅ ผู้รับเครื่องมือ -->
+      <td class="px-4 py-3 text-sm">${receiver || '-'}</td>
       <td class="px-4 py-3 text-sm whitespace-nowrap">${receiveText}</td>
       <td class="px-4 py-3 text-sm whitespace-nowrap">${surgeryText}</td>
       <td class="px-4 py-3 text-sm">
