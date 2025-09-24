@@ -212,20 +212,22 @@
             <div class="overflow-x-auto">
                 <table class="w-full table-auto">
                     <thead class="bg-blue-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ลำดับ</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">บริษัท</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">เครื่องมือ</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จำนวน</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">สถานะ</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">แพทย์</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">รูปภาพ</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จัดการ</th>
-                        </tr>
+                      <tr>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ลำดับ</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">บริษัท</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">เครื่องมือ</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จำนวน</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">สถานะ</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">แพทย์</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">วันที่รับเครื่องมือ</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">วันที่ผ่าตัด</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">รูปภาพ</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จัดการ</th>
+                      </tr>
                     </thead>
                     <tbody id="dataTableBody" class="divide-y divide-gray-200">
                         <tr id="noDataRow">
-                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="10" class="px-4 py-8 text-center text-gray-500">
                                 <i class="fas fa-inbox text-4xl mb-2 block"></i>
                                 ยังไม่มีข้อมูล
                             </td>
@@ -335,11 +337,45 @@
             </form>
         </div>
     </div>
+    
+    <!-- Saving Modal -->
+    <div id="savingModal" class="fixed inset-0 hidden z-[10000]">
+      <div class="absolute inset-0 bg-black/40"></div>
+      <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+          <div class="mx-auto mb-3 w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+            <svg class="animate-spin w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">กำลังบันทึกข้อมูล...</h3>
+          <p class="text-sm text-gray-500 mt-1">โปรดรอสักครู่</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Result Modal -->
+    <div id="resultModal" class="fixed inset-0 hidden z-[10001]">
+      <div class="absolute inset-0 bg-black/40"></div>
+      <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+          <div id="resultIcon" class="mx-auto mb-3 w-12 h-12 rounded-full flex items-center justify-center"></div>
+          <h3 id="resultTitle" class="text-lg font-semibold text-gray-800"></h3>
+          <p id="resultText" class="text-sm text-gray-600 mt-1"></p>
+          <button type="button" id="resultCloseBtn"
+                  class="mt-5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            ปิด
+          </button>
+        </div>
+      </div>
+    </div>
 
+    
     <!-- Footer -->
     <footer class="gradient-bg text-white mt-16">
         <div class="container mx-auto px-4 py-6 text-center">
-            <p class="text-blue-100">พัฒนาระบบโดย ร.ต.ธนกฤต วงศ์ศิลา น.สันทัดงาน กวห.รพ.ภูมิพลอดุลยเดช พอ.</p>
+            <p class="text-blue-100">พัฒนาระบบโดย <br>พ.อ.อ.ธนกฤต วงศ์ศิลา<br> น.สันทัดงาน กวห.รพ.ภูมิพลอดุลยเดช พอ.</p>
         </div>
     </footer>
 
@@ -463,6 +499,36 @@ function driveThumbUrl(url){
   const id = extractDriveId(url); if (!id) return (url || '').trim();
   return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
 }
+    
+// แปลงวันที่แบบปลอดภัย -> ไทย
+function formatDateTH(s){
+  if (!s) return '-';
+  const d = new Date(s);                 // รองรับ 'YYYY-MM-DD' และ 'YYYY-MM-DDTHH:mm'
+  if (isNaN(d)) return String(s);        // ถ้า parse ไม่ได้ ให้โชว์สตริงเดิม
+  return d.toLocaleDateString('th-TH', {
+    day: '2-digit', month: '2-digit', year: 'numeric'
+  });
+}
+function formatDateTimeTH(s){
+  if (!s) return '-';
+  const d = new Date(s);
+  if (isNaN(d)) return String(s);
+  return d.toLocaleString('th-TH', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+}
+// แปลงค่าวัน/เวลาเป็น epoch (มิลลิวินาที) เพื่อใช้เรียง
+function toEpoch(val){
+  if (!val) return 0;
+  const d = new Date(val);
+  return isNaN(d) ? 0 : d.getTime();
+}
+// เอาคีย์เรียงหลัก: วันที่รับเครื่องมือ (ถ้าไม่มี ใช้วันที่ผ่าตัด)
+function getSortEpoch(row){
+  return toEpoch(row.receiveDateTime) || toEpoch(row.surgeryDate) || 0;
+}
+
 
 /* ==============================
    API (form-urlencoded)
@@ -591,7 +657,7 @@ function updateTable() {
   if (!Array.isArray(medicalTools) || medicalTools.length === 0) {
     tbody.innerHTML = `
       <tr id="noDataRow">
-        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+        <td colspan="10" class="px-4 py-8 text-center text-gray-500">
           <i class="fas fa-inbox text-4xl mb-2 block"></i>ยังไม่มีข้อมูล
         </td>
       </tr>`;
@@ -599,10 +665,13 @@ function updateTable() {
     return;
   }
 
-  recordCount.textContent = `${medicalTools.length} รายการ`;
+  // ✅ เรียง: ล่าสุดอยู่บนสุด (รับเครื่องมือ > ผ่าตัด)
+  const data = [...medicalTools].sort((a, b) => getSortEpoch(b) - getSortEpoch(a));
+
+  recordCount.textContent = `${data.length} รายการ`;
   tbody.innerHTML = '';
 
-  medicalTools.forEach((tool, index) => {
+  data.forEach((tool, index) => {
     const companyName = (tool.companyName || '').trim();
     const toolType    = (tool.toolType || '').trim();
     const quantity    = tool.quantity ?? '';
@@ -611,6 +680,9 @@ function updateTable() {
     const statusClass = statusText === 'Sterile มาแล้ว'
       ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
     const hasImage    = !!(tool.imageUrl && String(tool.imageUrl).trim());
+
+    const receiveText = formatDateTimeTH(tool.receiveDateTime);
+    const surgeryText = formatDateTH(tool.surgeryDate);
 
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
@@ -623,23 +695,26 @@ function updateTable() {
         <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span>
       </td>
       <td class="px-4 py-3 text-sm">${surgeon}</td>
+      <td class="px-4 py-3 text-sm whitespace-nowrap">${receiveText}</td>
+      <td class="px-4 py-3 text-sm whitespace-nowrap">${surgeryText}</td>
       <td class="px-4 py-3 text-sm">
         ${hasImage
           ? `<button type="button" class="text-blue-600 hover:text-blue-800"
-                     data-action="view-image" data-idx="${index}">
+                     data-action="view-image" data-idx="${medicalTools.indexOf(tool)}">
                <i class="fas fa-image"></i> ดูรูป
              </button>`
           : 'ไม่มีรูป'}
       </td>
       <td class="px-4 py-3 text-sm">
         <div class="flex gap-2">
-          <button onclick="editTool(${index})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
-          <button onclick="deleteTool(${index})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
+          <button onclick="editTool(${medicalTools.indexOf(tool)})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
+          <button onclick="deleteTool(${medicalTools.indexOf(tool)})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
         </div>
       </td>`;
     tbody.appendChild(row);
   });
 }
+
 
 /* ==============================
    IMAGE MODAL
@@ -738,6 +813,7 @@ function closeEditModal(){ document.getElementById('editModal').classList.add('h
 
 async function onEditSubmit(e){
   e.preventDefault();
+
   const idx = parseInt(document.getElementById('editIndex').value, 10);
   const row = medicalTools[idx];
   if (!row || !row.id) { notify('error','ไม่พบข้อมูลรายการที่จะอัปเดต'); return; }
@@ -745,31 +821,55 @@ async function onEditSubmit(e){
   // ตรวจ "อื่นๆ" ใน modal
   if (document.getElementById('editToolTypeSelect').value === 'อื่นๆ' &&
       !document.getElementById('editToolTypeOther').value.trim()){
-    notify('warning','กรุณาระบุประเภทเครื่องมือ (อื่นๆ)'); return;
+    notify('warning','กรุณาระบุประเภทเครื่องมือ (อื่นๆ)'); 
+    return;
   }
 
-  const json = await callApi({
-    action: 'update',
-    id: row.id,
-    record: {
-      companyName: document.getElementById('editCompanyName').value.trim(),
-      toolType: getToolTypeValue('editToolTypeSelect','editToolTypeOther'),
-      quantity: Number(document.getElementById('editQuantity').value || '0'),
-      sterileStatus: document.getElementById('editSterileStatus').value,
-      surgeon: document.getElementById('editSurgeon').value.trim(),
-      surgeryDate: document.getElementById('editSurgeryDate').value || toDateInputValue(row.surgeryDate),
-      receiveDateTime: row.receiveDateTime,
-      receiver: document.getElementById('editReceiver').value.trim()
-    },
-    image: editNewImageDataURL || null
-  });
+  // ป้องกันกดซ้ำ + เปิด Saving
+  const submitBtn = document.querySelector('#editForm button[type="submit"]');
+  if (submitBtn){
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-60','cursor-not-allowed');
+  }
+  openSaving();
 
-  if (!json.success) throw new Error(json.message || "update failed");
-  notify('success','แก้ไขข้อมูลเรียบร้อยแล้ว');
-  editNewImageDataURL = null;
-  closeEditModal();
-  await loadData();
+  try {
+    const json = await callApi({
+      action: 'update',
+      id: row.id,
+      record: {
+        companyName: document.getElementById('editCompanyName').value.trim(),
+        toolType: getToolTypeValue('editToolTypeSelect','editToolTypeOther'),
+        quantity: Number(document.getElementById('editQuantity').value || '0'),
+        sterileStatus: document.getElementById('editSterileStatus').value,
+        surgeon: document.getElementById('editSurgeon').value.trim(),
+        surgeryDate: document.getElementById('editSurgeryDate').value || toDateInputValue(row.surgeryDate),
+        receiveDateTime: row.receiveDateTime,
+        receiver: document.getElementById('editReceiver').value.trim()
+      },
+      image: editNewImageDataURL || null
+    });
+
+    if (!json.success) throw new Error(json.message || "update failed");
+
+    closeSaving();
+    openResult('success','บันทึกการแก้ไขเรียบร้อยแล้ว');
+
+    editNewImageDataURL = null;
+    closeEditModal();
+    await loadData();
+
+  } catch (err) {
+    closeSaving();
+    openResult('error','บันทึกไม่สำเร็จ: ' + err.message);
+  } finally {
+    if (submitBtn){
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('opacity-60','cursor-not-allowed');
+    }
+  }
 }
+
 
 async function deleteTool(index){
   const row = medicalTools[index];
@@ -884,6 +984,14 @@ async function onSaveAll(){
   if (!receiver) { notify('warning','กรุณากรอกชื่อผู้รับเครื่องมือ'); return; }
   if (!confirm(`ยืนยันบันทึกทั้งหมด ${pendingSets.length} ชุด ?`)) return;
 
+  // ป้องกันกดซ้ำ + เปิด Saving Modal
+  const btn = document.getElementById('btnSaveAll');
+  btn.disabled = true;
+  btn.classList.add('opacity-60','cursor-not-allowed');
+  openSaving();
+
+  const totalToSave = pendingSets.length;
+
   try {
     for (const s of pendingSets) {
       const payload = {
@@ -903,15 +1011,64 @@ async function onSaveAll(){
       const res = await callApi(payload);
       if (!res.success) throw new Error(res.message || 'create failed');
     }
-    notify('success','บันทึกทั้งหมดเรียบร้อยแล้ว');
+
+    // ปิด Saving + แจ้งผลสำเร็จด้วย Result Modal
+    closeSaving();
+    openResult('success', `บันทึกรับเครื่องมือสำเร็จ ${totalToSave} ชุด`);
+
+    // เคลียร์คิวและรีเฟรช
     pendingSets = [];
     renderPending();
     document.getElementById('receiverFinal').value = '';
     await loadData();
+
   } catch (err) {
-    notify('error','บันทึกไม่สำเร็จ: ' + err.message, {timeout: 5000});
+    // ปิด Saving + แจ้งผลล้มเหลวด้วย Result Modal
+    closeSaving();
+    openResult('error', 'บันทึกไม่สำเร็จ: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('opacity-60','cursor-not-allowed');
   }
 }
+
+
+// ====== Modal: Saving / Result ======
+function openSaving(){
+  document.getElementById('savingModal').classList.remove('hidden');
+}
+function closeSaving(){
+  document.getElementById('savingModal').classList.add('hidden');
+}
+
+function openResult(type='success', text='บันทึกสำเร็จ'){
+  const modal = document.getElementById('resultModal');
+  const iconBox = document.getElementById('resultIcon');
+  const titleEl = document.getElementById('resultTitle');
+  const textEl  = document.getElementById('resultText');
+
+  // icon + สีตามผลลัพธ์
+  if (type === 'success'){
+    iconBox.className = 'mx-auto mb-3 w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center';
+    iconBox.innerHTML = '<i class="fas fa-check text-xl"></i>';
+    titleEl.textContent = 'บันทึกเรียบร้อย';
+  } else {
+    iconBox.className = 'mx-auto mb-3 w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center';
+    iconBox.innerHTML = '<i class="fas fa-times text-xl"></i>';
+    titleEl.textContent = 'บันทึกไม่สำเร็จ';
+  }
+  textEl.textContent = text || '';
+
+  modal.classList.remove('hidden');
+
+  // ปิดด้วยปุ่ม
+  document.getElementById('resultCloseBtn').onclick = () => {
+    modal.classList.add('hidden');
+  };
+  // ปิดเมื่อคลิกฉากหลัง
+  modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+}
+
 </script>
 
 
