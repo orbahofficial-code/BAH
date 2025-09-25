@@ -43,17 +43,26 @@
         .modal-backdrop { backdrop-filter: blur(5px); }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="gradient-bg text-white shadow-lg">
-        <div class="container mx-auto px-4 py-6">
-            <div class="flex items-center justify-center">
-                <i class="fas fa-stethoscope text-3xl mr-4"></i>
-                <h1 class="text-2xl md:text-3xl font-bold">ระบบรับเครื่องมือผ่าตัดออร์โธปิดิกส์</h1>
-            </div>
-            <p class="text-center mt-2 text-blue-100">โรงพยาบาลภูมิพลอดุลยเดช พอ.</p>
-        </div>
-    </header>
+<body class="bg-gray-50 text-gray-800">
+  <!-- ===== Header: โลโก้ + ชื่อระบบ (พื้นหลังใช้ .gradient-bg ที่คุณประกาศไว้) ===== -->
+  <header class="gradient-bg text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <!-- วงกลมโลโก้ -->
+      <div class="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-white/10 ring-2 ring-white/30
+                  flex items-center justify-center overflow-hidden">
+        <!-- เปลี่ยน src ให้เป็นไฟล์โลโก้จริงของ รพ. (วางไฟล์ไว้โฟลเดอร์เดียวกับ index) -->
+        <img src="hospital-logo.png" alt="โลโก้โรงพยาบาล" class="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+      </div>
+
+      <!-- ข้อความหัวเรื่อง (กึ่งกลางอัตโนมัติทุกอุปกรณ์) -->
+      <h1 class="text-center font-semibold mt-4 text-2xl sm:text-3xl">
+        ระบบรับเครื่องมือแพทย์
+      </h1>
+      <p class="text-center text-white/90 mt-1 text-sm sm:text-base">
+        โรงพยาบาลภูมิพลอดุลยเดช พอ.
+      </p>
+    </div>
+  </header>
 
     <div class="container mx-auto px-4 py-8">
         <!-- Form Section -->
