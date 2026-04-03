@@ -1,1181 +1,1439 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบรับเครื่องมือแพทย์</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-      <!-- Favicon / App Icons (ไฟล์อยู่โฟลเดอร์เดียวกับ index.html) -->
-      <link rel="apple-touch-icon" sizes="57x57" href="apple-icon-57x57.png">
-      <link rel="apple-touch-icon" sizes="60x60" href="apple-icon-60x60.png">
-      <link rel="apple-touch-icon" sizes="72x72" href="apple-icon-72x72.png">
-      <link rel="apple-touch-icon" sizes="76x76" href="apple-icon-76x76.png">
-      <link rel="apple-touch-icon" sizes="114x114" href="apple-icon-114x114.png">
-      <link rel="apple-touch-icon" sizes="120x120" href="apple-icon-120x120.png">
-      <link rel="apple-touch-icon" sizes="144x144" href="apple-icon-144x144.png">
-      <link rel="apple-touch-icon" sizes="152x152" href="apple-icon-152x152.png">
-      <link rel="apple-touch-icon" sizes="180x180" href="apple-icon-180x180.png">
-    
-      <link rel="icon" type="image/png" sizes="192x192" href="android-icon-192x192.png">
-      <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-      <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
-      <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    
-      <!-- PWA Manifest -->
-      <link rel="manifest" href="manifest.json">
-    
-      <!-- Windows tiles -->
-      <meta name="msapplication-TileColor" content="#ffffff">
-      <meta name="msapplication-TileImage" content="ms-icon-144x144.png">
-    
-      <!-- Theme color (Android/desktop browser UI) -->
-      <meta name="theme-color" content="#ffffff">
-    
-      <!-- iOS PWA look (ทางเลือก) -->
-      <meta name="apple-mobile-web-app-capable" content="yes">
-      <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%); }
-        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .modal-backdrop { backdrop-filter: blur(5px); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบรับเครื่องมือผ่าตัด</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <!-- PWA / favicon links (ปรับตามที่มีไฟล์จริง) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f2b5b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<style>
+/* ── Variables ─────────────────────────────────── */
+:root {
+  --navy:   #0f2b5b;
+  --blue:   #1a56db;
+  --sky:    #3b82f6;
+  --teal:   #0d9488;
+  --amber:  #d97706;
+  --red:    #dc2626;
+  --green:  #16a34a;
+  --gray-50:#f8fafc;
+  --gray-100:#f1f5f9;
+  --gray-200:#e2e8f0;
+  --gray-300:#cbd5e1;
+  --gray-500:#64748b;
+  --gray-700:#334155;
+  --gray-900:#0f172a;
+  --white:  #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow:    0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.14);
+  --radius:    14px;
+  --radius-sm: 8px;
+}
+
+/* ── Reset ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-900);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ── Header ────────────────────────────────────── */
+.app-header {
+  background: linear-gradient(135deg, var(--navy) 0%, #1e3f7a 60%, #1a56db 100%);
+  color: white;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,.25);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.header-logo {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.25);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; flex-shrink: 0;
+}
+.header-logo img { width: 40px; height: 40px; object-fit: contain; }
+.header-text h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: .01em; }
+.header-text p  { font-size: .8rem; color: rgba(255,255,255,.75); margin-top: 1px; }
+.header-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: .75rem;
+  color: rgba(255,255,255,.9);
+  white-space: nowrap;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ── Main layout ───────────────────────────────── */
+.app-body { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* ── Step indicator ────────────────────────────── */
+.steps-bar {
+  display: flex; align-items: center; gap: 0;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 0;
+  margin-bottom: 24px;
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+}
+.step-item {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  position: relative; cursor: default;
+  transition: background .2s;
+}
+.step-item::after {
+  content: '';
+  position: absolute; right: -1px; top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 22px solid transparent;
+  border-bottom: 22px solid transparent;
+  border-left: 12px solid var(--gray-200);
+  z-index: 2;
+}
+.step-item:last-child::after { display: none; }
+.step-item.active { background: #eff6ff; }
+.step-item.done   { background: #f0fdf4; }
+
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 700; flex-shrink: 0;
+  background: var(--gray-200); color: var(--gray-500);
+}
+.step-item.active .step-num { background: var(--blue); color: white; }
+.step-item.done   .step-num { background: var(--green); color: white; }
+
+.step-label { font-size: .8rem; line-height: 1.3; }
+.step-label strong { display: block; font-weight: 600; color: var(--gray-700); }
+.step-label span   { color: var(--gray-500); font-size: .72rem; }
+.step-item.active .step-label strong { color: var(--blue); }
+.step-item.done   .step-label strong { color: var(--green); }
+
+/* ── Card ──────────────────────────────────────── */
+.card {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+  margin-bottom: 20px;
+}
+.card-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.card-head-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.card-head h2 { font-size: 1rem; font-weight: 700; color: var(--gray-900); }
+.card-head .sub { font-size: .78rem; color: var(--gray-500); margin-top: 1px; }
+.card-head .badge-count {
+  margin-left: auto;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: .78rem; font-weight: 600;
+}
+.card-body { padding: 22px; }
+
+/* icon colors per section */
+.icon-blue  { background: #dbeafe; color: var(--blue); }
+.icon-indigo{ background: #e0e7ff; color: #4f46e5; }
+.icon-teal  { background: #ccfbf1; color: var(--teal); }
+
+/* ── Form grid ─────────────────────────────────── */
+.form-grid { display: grid; gap: 16px; }
+.form-grid-2 { grid-template-columns: 1fr 1fr; }
+@media (max-width: 640px) { .form-grid-2 { grid-template-columns: 1fr; } }
+
+.form-group label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: .82rem; font-weight: 600; color: var(--gray-700);
+  margin-bottom: 6px;
+}
+.form-group label i { color: var(--sky); font-size: .85rem; }
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family: 'Sarabun', sans-serif;
+  font-size: .92rem;
+  color: var(--gray-900);
+  background: white;
+  transition: border-color .18s, box-shadow .18s;
+  outline: none;
+}
+.form-control:focus {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+}
+.form-control::placeholder { color: var(--gray-300); }
+
+/* ── Upload zone ───────────────────────────────── */
+.upload-zone {
+  border: 2px dashed var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 20px 16px;
+  text-align: center;
+  transition: border-color .2s, background .2s;
+  background: var(--gray-50);
+  cursor: pointer;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--sky);
+  background: #eff6ff;
+}
+.upload-zone.has-image {
+  border-color: var(--teal);
+  background: #f0fdfa;
+}
+.upload-preview { display: none; margin-bottom: 12px; }
+.upload-preview img {
+  max-height: 110px; border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm); display: block; margin: 0 auto;
+}
+.upload-preview.show { display: block; }
+.upload-info { font-size: .75rem; color: var(--gray-500); margin-top: 6px; }
+.upload-size-badge {
+  display: inline-block;
+  background: #dcfce7; color: #15803d;
+  border-radius: 10px; padding: 2px 8px;
+  font-size: .7rem; font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ── Buttons ───────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-family: 'Sarabun', sans-serif; font-size: .9rem; font-weight: 600;
+  border: none; cursor: pointer; transition: all .18s;
+  text-decoration: none; white-space: nowrap;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: white; }
+.btn-primary:hover:not(:disabled) { background: #1a48c4; box-shadow: 0 4px 12px rgba(26,86,219,.3); }
+.btn-success { background: var(--teal); color: white; }
+.btn-success:hover:not(:disabled) { background: #0b7a70; box-shadow: 0 4px 12px rgba(13,148,136,.3); }
+.btn-danger  { background: var(--red); color: white; }
+.btn-danger:hover:not(:disabled)  { background: #b91c1c; }
+.btn-ghost   { background: var(--gray-100); color: var(--gray-700); border: 1.5px solid var(--gray-200); }
+.btn-ghost:hover:not(:disabled)   { background: var(--gray-200); }
+.btn-outline-blue { background: #dbeafe; color: var(--blue); border: 1.5px solid #bfdbfe; }
+.btn-outline-blue:hover:not(:disabled) { background: #bfdbfe; }
+.btn-lg { padding: 13px 26px; font-size: 1rem; border-radius: 10px; }
+.btn-sm { padding: 6px 12px; font-size: .8rem; }
+.btn-block { width: 100%; }
+
+.btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 480px) { .btn-group .btn { flex: 1; } }
+
+/* ── Add-set bar (highlight) ───────────────────── */
+.add-set-bar {
+  background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+  border: 1.5px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+}
+.add-set-bar .tip { flex: 1; font-size: .82rem; color: #1e40af; min-width: 180px; }
+.add-set-bar .tip strong { display: block; font-size: .9rem; }
+
+/* ── Pending table ─────────────────────────────── */
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead tr th {
+  padding: 10px 14px; text-align: left;
+  font-size: .78rem; font-weight: 700; color: var(--gray-700);
+  background: var(--gray-50);
+  border-bottom: 2px solid var(--gray-200);
+  white-space: nowrap;
+}
+tbody tr td {
+  padding: 10px 14px;
+  font-size: .85rem;
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--gray-50); }
+
+/* group heading row */
+.tr-group-heading td {
+  background: linear-gradient(90deg, #e0e7ff, #f0f4ff);
+  padding: 8px 14px;
+  font-size: .8rem; font-weight: 700; color: #3730a3;
+}
+
+/* ── Status badges ─────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: .75rem; font-weight: 600;
+}
+.badge-green  { background: #dcfce7; color: #15803d; }
+.badge-yellow { background: #fef9c3; color: #854d0e; }
+.badge-red    { background: #fee2e2; color: #991b1b; }
+.badge-blue   { background: #dbeafe; color: #1d4ed8; }
+.badge-gray   { background: var(--gray-100); color: var(--gray-500); }
+
+/* ── Receiver box (Step 3) ─────────────────────── */
+.receiver-box {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #86efac;
+  border-radius: var(--radius-sm);
+  padding: 18px;
+}
+.receiver-box label {
+  font-size: .85rem; font-weight: 700; color: #15803d;
+  display: flex; align-items: center; gap: 7px; margin-bottom: 10px;
+}
+.receiver-box .form-control {
+  border-color: #86efac;
+}
+.receiver-box .form-control:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+}
+
+/* ── Saving / Result modals ────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  display: none; z-index: 9000;
+  align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(15,27,46,.55);
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.2);
+  width: 100%; max-width: 420px;
+  overflow: hidden;
+  animation: modalIn .22s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modalIn {
+  from { transform: scale(.88); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.modal-box-lg { max-width: 700px; }
+.modal-head {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-head h3 { font-size: 1rem; font-weight: 700; }
+.modal-body { padding: 20px 22px; }
+.modal-footer { padding: 12px 22px 20px; display: flex; gap: 10px; }
+.modal-close-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--gray-500); font-size: 1.1rem;
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.modal-close-btn:hover { background: var(--gray-100); }
+
+/* center modal (saving/result) */
+.center-modal { text-align: center; padding: 32px 24px; }
+.center-modal .icon-ring {
+  width: 60px; height: 60px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px; font-size: 1.4rem;
+}
+.center-modal h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+.center-modal p  { font-size: .88rem; color: var(--gray-500); }
+
+/* spin animation */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin .7s linear infinite; }
+
+/* ── Image modal ───────────────────────────────── */
+#imageModal .modal-box { max-width: 800px; }
+#imageModal img { display: block; max-width: 100%; max-height: 70vh; margin: 0 auto; border-radius: var(--radius-sm); }
+
+/* ── Toast ─────────────────────────────────────── */
+#toastRoot {
+  position: fixed; top: 16px; right: 16px;
+  z-index: 19999; display: flex; flex-direction: column; gap: 10px;
+  max-width: min(340px, calc(100vw - 32px));
+}
+.toast {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: white;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.14);
+  border-left: 4px solid transparent;
+  animation: toastIn .2s ease;
+  font-size: .85rem;
+}
+@keyframes toastIn { from { transform: translateX(20px); opacity: 0; } }
+.toast.success { border-color: var(--green); }
+.toast.error   { border-color: var(--red); }
+.toast.warning { border-color: var(--amber); }
+.toast.info    { border-color: var(--sky); }
+.toast-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
+.toast.success .toast-icon { color: var(--green); }
+.toast.error   .toast-icon { color: var(--red); }
+.toast.warning .toast-icon { color: var(--amber); }
+.toast.info    .toast-icon { color: var(--sky); }
+.toast-msg { flex: 1; color: var(--gray-800); white-space: pre-line; }
+.toast-close { background: none; border: none; cursor: pointer; color: var(--gray-400); font-size: .9rem; }
+
+/* ── Empty state ───────────────────────────────── */
+.empty-state {
+  text-align: center; padding: 36px 20px;
+  color: var(--gray-400);
+}
+.empty-state i { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+.empty-state p { font-size: .88rem; }
+
+/* ── Footer ────────────────────────────────────── */
+.app-footer {
+  background: var(--navy);
+  color: rgba(255,255,255,.6);
+  text-align: center; padding: 18px;
+  font-size: .78rem; line-height: 1.7;
+  margin-top: 40px;
+}
+
+/* ── Utility ───────────────────────────────────── */
+.divider { height: 1px; background: var(--gray-100); margin: 20px 0; }
+.text-muted { color: var(--gray-500); font-size: .82rem; }
+.mono { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; }
+.hidden { display: none !important; }
+</style>
 </head>
-<body class="bg-gray-50 text-gray-800">
-  <!-- ===== Header: โลโก้ + ชื่อระบบ (พื้นหลังใช้ .gradient-bg ที่คุณประกาศไว้) ===== -->
-  <header class="gradient-bg text-white">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <!-- วงกลมโลโก้ -->
-      <div class="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-white/10 ring-2 ring-white/30
-                  flex items-center justify-center overflow-hidden">
-        <!-- เปลี่ยน src ให้เป็นไฟล์โลโก้จริงของ รพ. (วางไฟล์ไว้โฟลเดอร์เดียวกับ index) -->
-        <img src="hospital-logo.png" alt="โลโก้โรงพยาบาล" class="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <img src="hospital-logo.png" alt="โลโก้" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fas fa-hospital text-white\' style=\'font-size:1.3rem\'></i>'">
+    </div>
+    <div class="header-text">
+      <h1>ระบบรับเครื่องมือผ่าตัด</h1>
+      <p>ห้องผ่าตัด โรงพยาบาลภูมิพลอดุลยเดช พอ.</p>
+    </div>
+    <div class="header-badge" id="liveClock">--:--</div>
+  </div>
+</header>
+
+<!-- ═══ BODY ══════════════════════════════════════════════════════════ -->
+<main class="app-body">
+
+  <!-- Step Indicator -->
+  <div class="steps-bar" id="stepsBar">
+    <div class="step-item active" id="step1El">
+      <div class="step-num">1</div>
+      <div class="step-label"><strong>กรอกข้อมูลชุดเครื่องมือ</strong><span>ทีละชุด</span></div>
+    </div>
+    <div class="step-item" id="step2El">
+      <div class="step-num">2</div>
+      <div class="step-label"><strong>ตรวจสอบรายการ</strong><span>ก่อนบันทึก</span></div>
+    </div>
+    <div class="step-item" id="step3El">
+      <div class="step-num">3</div>
+      <div class="step-label"><strong>ระบุผู้รับ & บันทึก</strong><span>บันทึกทั้งหมดทีเดียว</span></div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 1: Form ─── -->
+  <div class="card" id="formCard">
+    <div class="card-head">
+      <div class="card-head-icon icon-blue"><i class="fas fa-plus-circle"></i></div>
+      <div>
+        <h2>Step 1 — กรอกข้อมูลชุดเครื่องมือ</h2>
+        <div class="sub">กรอกข้อมูลแล้วกด "เพิ่มเข้าคิว" ทุกชุดก่อนบันทึก</div>
       </div>
-
-      <!-- ข้อความหัวเรื่อง (กึ่งกลางอัตโนมัติทุกอุปกรณ์) -->
-      <h1 class="text-center font-semibold mt-4 text-2xl sm:text-3xl">
-        ระบบรับเครื่องมือผ่าตัด
-      </h1>
-      <p class="text-center text-white/90 mt-1 text-sm sm:text-base">
-        ห้องผ่าตัด โรงพยาบาลภูมิพลอดุลยเดช พอ.
-      </p>
     </div>
-  </header>
+    <div class="card-body">
+      <form id="medicalToolForm" novalidate>
+        <div class="form-grid form-grid-2">
 
-    <div class="container mx-auto px-4 py-8">
-        <!-- Form Section -->
-        <div class="bg-white rounded-xl card-shadow p-6 mb-8">
-            <div class="flex items-center mb-6">
-                <i class="fas fa-plus-circle text-blue-600 text-2xl mr-3"></i>
-                <h2 class="text-xl font-semibold text-gray-800">เพิ่มข้อมูลเครื่องมือผ่าตัด</h2>
+          <!-- บริษัท -->
+          <div class="form-group">
+            <label><i class="fas fa-building"></i>ชื่อบริษัท <span style="color:var(--red)">*</span></label>
+            <input type="text" id="companyName" class="form-control" placeholder="เช่น Synthes, Stryker">
+          </div>
+
+          <!-- ประเภท -->
+          <div class="form-group">
+            <label><i class="fas fa-tools"></i>ประเภทเครื่องมือ <span style="color:var(--red)">*</span></label>
+            <select id="toolTypeSelect" class="form-control">
+              <option value="">— เลือกประเภท —</option>
+              <option>Plate and Screw</option>
+              <option>Nail</option>
+              <option>เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก</option>
+              <option>เครื่องมือ Scope</option>
+              <option>เอกสาร</option>
+              <option value="อื่นๆ">อื่นๆ (ระบุ)</option>
+            </select>
+            <input type="text" id="toolTypeOther" class="form-control hidden" placeholder="ระบุประเภทเครื่องมือ" style="margin-top:8px">
+          </div>
+
+          <!-- จำนวน -->
+          <div class="form-group">
+            <label><i class="fas fa-hashtag"></i>จำนวน (ชุด/กล่อง) <span style="color:var(--red)">*</span></label>
+            <input type="number" id="quantity" class="form-control" placeholder="1" min="1">
+          </div>
+
+          <!-- สถานะ -->
+          <div class="form-group">
+            <label><i class="fas fa-shield-alt"></i>สถานะเครื่องมือ <span style="color:var(--red)">*</span></label>
+            <select id="sterileStatus" class="form-control">
+              <option value="">— เลือกสถานะ —</option>
+              <option value="ต้องทำ Sterile">ต้องทำ Sterile</option>
+              <option value="ไม่ต้องทำ Sterile">ไม่ต้องทำ Sterile</option>
+              <option value="Sterile มาแล้ว">Sterile มาแล้ว</option>
+            </select>
+          </div>
+
+          <!-- แพทย์ -->
+          <div class="form-group">
+            <label><i class="fas fa-user-md"></i>แพทย์ผ่าตัด <span style="color:var(--red)">*</span></label>
+            <input type="text" id="surgeon" class="form-control" placeholder="พ.อ. / พ.ท. ...">
+          </div>
+
+          <!-- วันที่ผ่าตัด -->
+          <div class="form-group">
+            <label><i class="fas fa-calendar-alt"></i>วันที่ผ่าตัด <span style="color:var(--red)">*</span></label>
+            <input type="date" id="surgeryDate" class="form-control">
+          </div>
+
+          <!-- วัน-เวลารับ -->
+          <div class="form-group">
+            <label><i class="fas fa-clock"></i>วันที่และเวลารับเครื่องมือ <span style="color:var(--red)">*</span></label>
+            <input type="datetime-local" id="receiveDateTime" class="form-control">
+          </div>
+
+        </div><!-- /form-grid -->
+
+        <!-- Upload zone -->
+        <div class="form-group" style="margin-top:16px">
+          <label><i class="fas fa-camera"></i>รูปภาพเครื่องมือ <span class="text-muted">(ไม่บังคับ — max 1000px, อัตโนมัติ)</span></label>
+          <input type="file" id="toolImage" accept="image/*" class="hidden">
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('toolImage').click()">
+            <div class="upload-preview" id="imagePreview">
+              <img id="previewImg" alt="preview">
             </div>
-
-            <form id="medicalToolForm" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Company Name -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-building mr-2"></i>ชื่อบริษัท
-                        </label>
-                        <input type="text" id="companyName" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-
-                   
-                    <!-- Tool Type -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-tools mr-2"></i>ประเภทเครื่องมือ
-                      </label>
-                      <select id="toolTypeSelect" required
-                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">-- เลือกประเภท --</option>
-                        <option value="Plate and Screw">Plate and Screw</option>
-                        <option value="Nail">Nail</option>
-                        <option value="เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก">เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก</option>
-                        <option value="เครื่องมือ Scope">เครื่องมือ Scope</option>
-                        <option value="เอกสาร">เอกสาร</option>
-                        <option value="อื่นๆ">อื่นๆ</option>
-                      </select>
-                      <input type="text" id="toolTypeOther" placeholder="ระบุประเภทเครื่องมือ"
-                             class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hidden">
-                    </div>
-
-
-                    <!-- Quantity -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-hashtag mr-2"></i>จำนวน
-                        </label>
-                        <input type="number" id="quantity" required min="1"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-
-                    <!-- Sterile Status -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-shield-alt mr-2"></i>สถานะเครื่องมือ
-                        </label>
-                        <select id="sterileStatus" required 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">เลือกสถานะ</option>
-                            <option value="ต้องทำ Sterile">ต้องทำ Sterile</option>
-                            <option value="ต้องทำ Sterile">ไม่ต้องทำ Sterile</option>
-                            <option value="Sterile มาแล้ว">Sterile มาแล้ว</option>
-                        </select>
-                    </div>
-
-                    <!-- Surgeon -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-user-md mr-2"></i>แพทย์ผ่าตัด
-                        </label>
-                        <input type="text" id="surgeon" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-
-                    <!-- Surgery Date -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-calendar-alt mr-2"></i>วันที่ผ่าตัด
-                        </label>
-                        <input type="date" id="surgeryDate" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-
-                    <!-- Receive DateTime -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-clock mr-2"></i>วันที่และเวลารับเครื่องมือ
-                        </label>
-                        <input type="datetime-local" id="receiveDateTime" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Image Upload -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-camera mr-2"></i>อัพโหลดรูปภาพเครื่องมือ
-                    </label>
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                        <input type="file" id="toolImage" accept="image/*" class="hidden">
-                        <div id="imagePreview" class="hidden mb-4">
-                            <img id="previewImg" class="mx-auto max-h-32 rounded-lg">
-                        </div>
-                        <button type="button" onclick="document.getElementById('toolImage').click()" 
-                                class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors">
-                            <i class="fas fa-upload mr-2"></i>เลือกรูปภาพ
-                        </button>
-                        <p class="text-sm text-gray-500 mt-2">รองรับไฟล์ JPG, PNG</p>
-                    </div>
-                </div>
-                
-                <!-- Buttons: เพิ่มชุดในคิว + ล้างเฉพาะชุดนี้ -->
-                <div class="flex flex-col sm:flex-row gap-4 pt-6">
-                  <button type="button" id="btnAddSet"
-                          class="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                    <i class="fas fa-layer-group mr-2"></i>กดตรงนี้เพื่อตรวจสอบก่อนการบันทึก
-                  </button>
-                  <button type="button" id="btnResetCurrent"
-                          class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors font-medium">
-                    <i class="fas fa-redo mr-2"></i>ล้างฟอร์มชุดนี้
-                  </button>
-                </div>
-            </form>
+            <i class="fas fa-cloud-upload-alt" style="font-size:1.8rem;color:var(--gray-300);margin-bottom:8px;display:block"></i>
+            <div style="font-size:.88rem;color:var(--gray-500)">แตะหรือคลิกเพื่อเลือกรูปภาพ</div>
+            <div class="upload-info">JPG / PNG — ระบบจะย่อภาพอัตโนมัติ ไม่เกิน 1000px</div>
+            <div id="imgSizeBadge" class="hidden"></div>
+          </div>
+          <div id="uploadStatus" class="text-muted hidden" style="margin-top:6px"></div>
         </div>
-<!-- Pending queue (ชุดที่เตรียมบันทึก) -->
-<div class="bg-white rounded-xl card-shadow p-6 mt-6">
-  <div class="flex items-center justify-between mb-4">
-    <div class="flex items-center">
-      <i class="fas fa-list text-indigo-600 text-2xl mr-3"></i>
-      <h3 class="text-lg font-semibold text-gray-800">ชุดเครื่องมือที่เตรียมบันทึก</h3>
-    </div>
-    <span id="pendingCount" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">0 ชุด</span>
-  </div>
 
-  <div id="pendingEmpty" class="text-gray-500 text-center py-6">
-    ยังไม่มีชุดที่เตรียมบันทึก — กด “เพิ่มชุดเครื่องมือ” ด้านบนก่อน
-  </div>
-
-          <div id="pendingList" class="hidden overflow-x-auto">
-            <table class="w-full table-auto">
-              <thead class="bg-indigo-50">
-                <tr>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">ลำดับ</th>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">บริษัท</th>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">เครื่องมือ</th>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">จำนวน</th>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">สถานะ</th>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">แพทย์</th>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">วันที่ผ่าตัด</th>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">รูป</th>
-                  <th class="px-4 py-2 text-left text-sm text-gray-700">ลบ</th>
-                </tr>
-              </thead>
-              <tbody id="pendingBody" class="divide-y divide-gray-200"></tbody>
-            </table>
+        <!-- Action bar -->
+        <div class="add-set-bar" style="margin-top:20px">
+          <div class="tip">
+            <strong><i class="fas fa-layer-group" style="color:var(--blue)"></i> กดเพิ่มเข้าคิวทุกชุด ก่อนบันทึก</strong>
+            กรอกข้อมูลครบแล้วกด "เพิ่มเข้าคิว" ทำซ้ำจนครบทุกชุด จากนั้นไปบันทึกทีเดียว
           </div>
-        
-          <!-- ผู้รับเครื่องมือ (ใส่ครั้งเดียว) -->
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                <i class="fas fa-user mr-2"></i>ผู้รับเครื่องมือ (ใส่ครั้งเดียวสำหรับทุกชุด)
-              </label>
-              <input type="text" id="receiverFinal" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-            </div>
-          </div>
-        
-          <div class="flex flex-col sm:flex-row gap-4 pt-6">
-            <button type="button" id="btnSaveAll"
-                    class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
-              <i class="fas fa-save mr-2"></i>บันทึกทั้งหมด
+          <div class="btn-group">
+            <button type="button" id="btnAddSet" class="btn btn-primary">
+              <i class="fas fa-plus"></i> เพิ่มเข้าคิว
+            </button>
+            <button type="button" id="btnResetCurrent" class="btn btn-ghost">
+              <i class="fas fa-redo"></i> ล้างฟอร์ม
             </button>
           </div>
         </div>
 
-        <!-- Data Table -->
-        <div class="bg-white rounded-xl card-shadow p-6">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center">
-                    <i class="fas fa-table text-blue-600 text-2xl mr-3"></i>
-                    <h2 class="text-xl font-semibold text-gray-800">ข้อมูลเครื่องมือที่บันทึก</h2>
-                </div>
-                <span id="recordCount" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">0 รายการ</span>
-            </div>
+      </form>
+    </div><!-- /card-body -->
+  </div><!-- /#formCard -->
 
-            <div class="overflow-x-auto">
-                <table class="w-full table-auto">
-                    <thead class="bg-blue-50">
-                      <tr>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ลำดับ</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">บริษัท</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">เครื่องมือ</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จำนวน</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">สถานะ</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">แพทย์</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ผู้รับเครื่องมือ</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">วันที่รับเครื่องมือ</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">วันที่ผ่าตัด</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">รูปภาพ</th>
-                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">จัดการ</th>
-                      </tr>
-                    </thead>
-                    <tbody id="dataTableBody" class="divide-y divide-gray-200">
-                        <tr id="noDataRow">
-                            <td colspan="11" class="px-4 py-8 text-center text-gray-500">
-                                <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                                ยังไม่มีข้อมูล
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
 
-    <!-- Image Modal -->
-    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-4xl max-h-full overflow-auto">
-            <div class="p-4 border-b flex justify-between items-center">
-                <h3 class="text-lg font-semibold">รูปภาพเครื่องมือ</h3>
-                <button onclick="closeImageModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="p-4">
-                <img id="modalImage" class="block mx-auto max-w-full max-h-[75vh] h-auto rounded-lg" alt="">
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-2xl w-full max-h-full overflow-auto">
-            <div class="p-6 border-b">
-                <h3 class="text-lg font-semibold">แก้ไขข้อมูลเครื่องมือ</h3>
-            </div>
-            <form id="editForm" class="p-6 space-y-4">
-                <input type="hidden" id="editIndex">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อบริษัท</label>
-                        <input type="text" id="editCompanyName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">ประเภทเครื่องมือ</label>
-                      <select id="editToolTypeSelect" required
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- เลือกประเภท --</option>
-                        <option value="Plate and Screw">Plate and Screw</option>
-                        <option value="Nail">Nail</option>
-                        <option value="เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก">เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก</option>
-                        <option value="เครื่องมือ Scope">เครื่องมือ Scope</option>
-                        <option value="เอกสาร">เอกสาร</option>
-                        <option value="อื่นๆ">อื่นๆ</option>
-                      </select>
-                      <input type="text" id="editToolTypeOther" placeholder="ระบุประเภทเครื่องมือ"
-                             class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 hidden">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">จำนวน</label>
-                        <input type="number" id="editQuantity" required min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">สถานะเครื่องมือ</label>
-                        <select id="editSterileStatus" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="ต้องทำ Sterile">ต้องทำ Sterile</option>
-                            <option value="Sterile มาแล้ว">Sterile มาแล้ว</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">แพทย์ผ่าตัด</label>
-                        <input type="text" id="editSurgeon" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">วันที่ผ่าตัด</label>
-                        <input type="date" id="editSurgeryDate" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <!-- Edit: เปลี่ยนรูป (ไม่บังคับ) -->
-                    <div class="grid grid-cols-1 gap-3 pt-2 md:col-span-2">
-                      <label class="block text-sm font-medium text-gray-700">
-                        <i class="fas fa-camera mr-2"></i> เปลี่ยนรูปภาพ (ถ้าไม่เลือก จะใช้รูปเดิม)
-                      </label>
-                      <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                        <input type="file" id="editImageInput" accept="image/*" class="hidden">
-                        <div id="editImageCurrent" class="mb-2 text-sm text-gray-600"></div>
-                        <div id="editImagePreview" class="hidden mb-2">
-                          <img id="editPreviewImg" class="mx-auto max-h-36 rounded-lg" alt="">
-                        </div>
-                        <div class="flex gap-2 justify-center">
-                          <button type="button"
-                                  onclick="document.getElementById('editImageInput').click()"
-                                  class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md">เลือกรูปใหม่</button>
-                          <button type="button" id="btnClearEditImage"
-                                  class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md">ล้างรูปใหม่</button>
-                        </div>
-                      </div>
-                    </div>
-                                        <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ผู้รับเครื่องมือ</label>
-                        <input type="text" id="editReceiver" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
-                </div>
-                <div class="flex gap-4 pt-4">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                        <i class="fas fa-save mr-2"></i>บันทึกการแก้ไข
-                    </button>
-                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                        ยกเลิก
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Saving Modal -->
-    <div id="savingModal" class="fixed inset-0 hidden z-[10000]">
-      <div class="absolute inset-0 bg-black/40"></div>
-      <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-          <div class="mx-auto mb-3 w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-            <svg class="animate-spin w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-800">กำลังบันทึกข้อมูล...</h3>
-          <p class="text-sm text-gray-500 mt-1">โปรดรอสักครู่</p>
-        </div>
+  <!-- ─── STEP 2+3: Pending queue ─── -->
+  <div class="card" id="pendingCard">
+    <div class="card-head">
+      <div class="card-head-icon icon-indigo"><i class="fas fa-list-check"></i></div>
+      <div>
+        <h2>Step 2 — รายการที่รอบันทึก</h2>
+        <div class="sub">ตรวจสอบให้ครบก่อนกดบันทึก</div>
       </div>
+      <div class="badge-count badge badge-blue" id="pendingCount">0 ชุด</div>
     </div>
-    
-    <!-- Result Modal -->
-    <div id="resultModal" class="fixed inset-0 hidden z-[10001]">
-      <div class="absolute inset-0 bg-black/40"></div>
-      <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-          <div id="resultIcon" class="mx-auto mb-3 w-12 h-12 rounded-full flex items-center justify-center"></div>
-          <h3 id="resultTitle" class="text-lg font-semibold text-gray-800"></h3>
-          <p id="resultText" class="text-sm text-gray-600 mt-1"></p>
-          <button type="button" id="resultCloseBtn"
-                  class="mt-5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-            ปิด
+    <div class="card-body">
+
+      <!-- Empty -->
+      <div class="empty-state" id="pendingEmpty">
+        <i class="fas fa-inbox"></i>
+        <p>ยังไม่มีชุดเครื่องมือ<br>กรอกข้อมูลด้านบน แล้วกด "เพิ่มเข้าคิว"</p>
+      </div>
+
+      <!-- Table -->
+      <div class="table-scroll hidden" id="pendingTableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>บริษัท</th>
+              <th>ประเภทเครื่องมือ</th>
+              <th>จำนวน</th>
+              <th>สถานะ</th>
+              <th>แพทย์</th>
+              <th>วันผ่าตัด</th>
+              <th>รูป</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="pendingBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Step 3: receiver + save -->
+      <div id="saveSection" class="hidden" style="margin-top:20px">
+        <div class="divider"></div>
+        <div class="receiver-box">
+          <label><i class="fas fa-user-check"></i> Step 3 — ผู้รับเครื่องมือ (ใช้กับทุกชุดในคิว)</label>
+          <input type="text" id="receiverFinal" class="form-control" placeholder="ชื่อ-สกุล / ยศ ผู้รับเครื่องมือ">
+        </div>
+        <div style="margin-top:14px">
+          <button type="button" id="btnSaveAll" class="btn btn-success btn-lg btn-block">
+            <i class="fas fa-save"></i> บันทึกทั้งหมด
           </button>
         </div>
       </div>
+
     </div>
+  </div><!-- /#pendingCard -->
 
-    
-    <!-- Footer -->
-    <footer class="gradient-bg text-white mt-16">
-        <div class="container mx-auto px-4 py-6 text-center">
-            <p class="text-blue-100">พัฒนาระบบโดย <br>พ.อ.อ.ธนกฤต วงศ์ศิลา<br> น.สันทัดงาน กวห.รพ.ภูมิพลอดุลยเดช พอ.</p>
+
+  <!-- ─── Data table ─── -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-icon icon-teal"><i class="fas fa-table-list"></i></div>
+      <div>
+        <h2>ข้อมูลเครื่องมือที่บันทึกแล้ว</h2>
+        <div class="sub">เรียงตามวันที่ผ่าตัด ล่าสุดก่อน</div>
+      </div>
+      <div class="badge-count badge badge-blue" id="recordCount">0 รายการ</div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>บริษัท</th>
+              <th>เครื่องมือ</th>
+              <th>จำนวน</th>
+              <th>สถานะ</th>
+              <th>แพทย์</th>
+              <th>ผู้รับ</th>
+              <th>วันรับ</th>
+              <th>วันผ่าตัด</th>
+              <th>รูป</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody">
+            <tr><td colspan="11" style="padding:0">
+              <div class="empty-state"><i class="fas fa-inbox"></i><p>ยังไม่มีข้อมูล</p></div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════════════════ -->
+<footer class="app-footer">
+  พัฒนาระบบโดย พ.อ.อ.ธนกฤต วงศ์ศิลา &nbsp;·&nbsp; น.สันทัดงาน กวห.รพ.ภูมิพลอดุลยเดช พอ.
+</footer>
+
+<!-- ═══ TOAST ROOT ════════════════════════════════════════════════════ -->
+<div id="toastRoot"></div>
+
+<!-- ═══ MODALS ════════════════════════════════════════════════════════ -->
+
+<!-- Image modal -->
+<div class="modal-overlay" id="imageModal">
+  <div class="modal-box modal-box-lg">
+    <div class="modal-head">
+      <h3><i class="fas fa-image" style="color:var(--blue)"></i> รูปภาพเครื่องมือ</h3>
+      <button class="modal-close-btn" onclick="closeImageModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body"><img id="modalImage" alt=""></div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box modal-box-lg">
+    <div class="modal-head">
+      <h3><i class="fas fa-pen" style="color:var(--blue)"></i> แก้ไขข้อมูลเครื่องมือ</h3>
+      <button class="modal-close-btn" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="editForm" novalidate>
+      <div class="modal-body">
+        <input type="hidden" id="editIndex">
+        <div class="form-grid form-grid-2">
+
+          <div class="form-group">
+            <label><i class="fas fa-building"></i>ชื่อบริษัท</label>
+            <input type="text" id="editCompanyName" class="form-control">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-tools"></i>ประเภทเครื่องมือ</label>
+            <select id="editToolTypeSelect" class="form-control">
+              <option value="">— เลือกประเภท —</option>
+              <option>Plate and Screw</option><option>Nail</option>
+              <option>เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก</option>
+              <option>เครื่องมือ Scope</option><option>เอกสาร</option>
+              <option value="อื่นๆ">อื่นๆ (ระบุ)</option>
+            </select>
+            <input type="text" id="editToolTypeOther" class="form-control hidden" placeholder="ระบุ" style="margin-top:8px">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-hashtag"></i>จำนวน</label>
+            <input type="number" id="editQuantity" class="form-control" min="1">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-shield-alt"></i>สถานะเครื่องมือ</label>
+            <select id="editSterileStatus" class="form-control">
+              <option value="ต้องทำ Sterile">ต้องทำ Sterile</option>
+              <option value="ไม่ต้องทำ Sterile">ไม่ต้องทำ Sterile</option>
+              <option value="Sterile มาแล้ว">Sterile มาแล้ว</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-user-md"></i>แพทย์ผ่าตัด</label>
+            <input type="text" id="editSurgeon" class="form-control">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-calendar-alt"></i>วันที่ผ่าตัด</label>
+            <input type="date" id="editSurgeryDate" class="form-control">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-user"></i>ผู้รับเครื่องมือ</label>
+            <input type="text" id="editReceiver" class="form-control">
+          </div>
+
+          <!-- edit image -->
+          <div class="form-group" style="grid-column:1/-1">
+            <label><i class="fas fa-camera"></i>เปลี่ยนรูปภาพ <span class="text-muted">(ไม่เลือก = ใช้รูปเดิม)</span></label>
+            <input type="file" id="editImageInput" accept="image/*" class="hidden">
+            <div class="upload-zone" id="editUploadZone" style="cursor:default">
+              <div id="editImageCurrent" class="text-muted" style="font-size:.82rem;margin-bottom:8px"></div>
+              <div class="upload-preview" id="editImagePreview">
+                <img id="editPreviewImg" alt="">
+              </div>
+              <div class="btn-group" style="justify-content:center">
+                <button type="button" class="btn btn-outline-blue btn-sm" onclick="document.getElementById('editImageInput').click()">
+                  <i class="fas fa-upload"></i> เลือกรูปใหม่
+                </button>
+                <button type="button" id="btnClearEditImage" class="btn btn-ghost btn-sm">
+                  <i class="fas fa-times"></i> ล้าง
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
-    </footer>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-save"></i> บันทึกการแก้ไข</button>
+        <button type="button" onclick="closeEditModal()" class="btn btn-ghost btn-block">ยกเลิก</button>
+      </div>
+    </form>
+  </div>
+</div>
 
+<!-- Saving modal -->
+<div class="modal-overlay" id="savingModal">
+  <div class="modal-box" style="max-width:320px">
+    <div class="center-modal">
+      <div class="icon-ring" style="background:#dbeafe;color:var(--blue)">
+        <i class="fas fa-circle-notch spin"></i>
+      </div>
+      <h3>กำลังบันทึกข้อมูล...</h3>
+      <p>โปรดรอสักครู่</p>
+    </div>
+  </div>
+</div>
+
+<!-- Result modal -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal-box" style="max-width:340px">
+    <div class="center-modal">
+      <div class="icon-ring" id="resultIcon"></div>
+      <h3 id="resultTitle"></h3>
+      <p id="resultText"></p>
+      <button type="button" id="resultCloseBtn" class="btn btn-primary" style="margin-top:18px">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCRIPT ════════════════════════════════════════════════════════ -->
 <script>
-/* ==============================
-   CONFIG & STATE
-================================*/
+/* ── CONFIG ─────────────────────────────────────── */
 const API_BASE = "https://script.google.com/macros/s/AKfycbzxLfUJIwFPEixuoERmew6L2g3mjRs6R0hAcdKRmDM9nibBVU7xbg4aVxKuuf37fO_y/exec";
+const MAX_IMG_PX = 1000;   // จำกัดขนาดภาพด้าน Max
+const IMG_QUALITY = 0.82;  // JPEG quality
 
+/* ── STATE ──────────────────────────────────────── */
 let medicalTools = [];
 let editingIndex = -1;
-let currentPreviewDataURL = null;   // preview รูปตอนเพิ่มชุด
-let editNewImageDataURL = null;     // preview รูปใหม่ตอนแก้ไข
-let pendingSets = [];               // คิวชุดเครื่องมือที่จะบันทึกทีเดียว
+let currentPreviewDataURL = null;
+let editNewImageDataURL   = null;
+let pendingSets = [];
 
-/* ==============================
-   TOAST (แจ้งเตือนสวย ๆ)
-================================*/
-function ensureToastRoot(){
-  let root = document.getElementById('toastRoot');
-  if (!root){
-    root = document.createElement('div');
-    root.id = 'toastRoot';
-    root.className = 'fixed top-4 right-4 z-[9999] space-y-3 max-w-[90vw]';
-    document.body.appendChild(root);
-  }
-  return root;
-}
-
-function notify(type='info', text='', {timeout=2800}={}){
-  const root = ensureToastRoot();
-  const map = {
-    success: { icon: 'fa-circle-check', bar: 'bg-green-500', border: 'border-green-500', color: 'text-green-600' },
-    error:   { icon: 'fa-triangle-exclamation', bar: 'bg-red-500',   border: 'border-red-500',   color: 'text-red-600' },
-    warning: { icon: 'fa-circle-exclamation',   bar: 'bg-amber-500', border: 'border-amber-500', color: 'text-amber-600' },
-    info:    { icon: 'fa-circle-info',          bar: 'bg-blue-500',  border: 'border-blue-500',  color: 'text-blue-600' },
-  };
-  const tone = map[type] || map.info;
-
-  const el = document.createElement('div');
-  el.className = `pointer-events-auto flex w-80 items-start gap-3 rounded-xl bg-white/95 backdrop-blur p-3 shadow-xl ring-1 ring-black/5 border-l-4 ${tone.border}`;
-  el.style.transition = 'transform .2s ease, opacity .2s ease';
-  el.style.transform = 'translateX(8px)';
-  el.style.opacity = '0';
-
-  el.innerHTML = `
-    <i class="fa-solid ${tone.icon} ${tone.color} mt-0.5 text-lg"></i>
-    <div class="text-sm text-gray-800 whitespace-pre-line flex-1">${text}</div>
-    <button type="button" aria-label="ปิด" class="text-gray-400 hover:text-gray-700">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  `;
-
-  const close = () => {
-    el.style.transform = 'translateX(8px)'; el.style.opacity = '0';
-    setTimeout(() => el.remove(), 180);
-  };
-  el.querySelector('button').addEventListener('click', close);
-
-  root.appendChild(el);
-  requestAnimationFrame(() => { el.style.transform = 'translateX(0)'; el.style.opacity = '1'; });
-  if (timeout > 0) setTimeout(close, timeout);
-}
-
-/* ==============================
-   HELPERS
-================================*/
-// เวลาเริ่มต้นช่องรับเครื่องมือ
-function setNowToReceiveDateTime(){
+/* ── CLOCK ──────────────────────────────────────── */
+function updateClock() {
   const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-    .toISOString().slice(0,16);
+  document.getElementById('liveClock').textContent =
+    now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ── IMAGE RESIZE (canvas) ──────────────────────── */
+function resizeImageFile(file, maxPx = MAX_IMG_PX, quality = IMG_QUALITY) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = ev => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width: w, height: h } = img;
+        const originalSize = file.size;
+
+        // คำนวณขนาดใหม่
+        if (w > maxPx || h > maxPx) {
+          if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else        { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+        const dataURL = canvas.toDataURL('image/jpeg', quality);
+        const newBytes = Math.round((dataURL.length - 22) * 3 / 4); // approx
+        resolve({ dataURL, w, h, originalSize, newBytes });
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ── TOAST ──────────────────────────────────────── */
+const TOAST_ICONS = {
+  success: 'fa-circle-check',
+  error:   'fa-triangle-exclamation',
+  warning: 'fa-circle-exclamation',
+  info:    'fa-circle-info',
+};
+function notify(type = 'info', text = '', { timeout = 3200 } = {}) {
+  const root = document.getElementById('toastRoot');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `
+    <i class="fas ${TOAST_ICONS[type] || TOAST_ICONS.info} toast-icon"></i>
+    <div class="toast-msg">${text}</div>
+    <button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
+  root.appendChild(el);
+  if (timeout > 0) setTimeout(() => el.remove(), timeout);
+}
+
+/* ── HELPERS ────────────────────────────────────── */
+function setNow() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   document.getElementById('receiveDateTime').value = local;
 }
-
-// <input type="date"> ต้องการ yyyy-MM-dd
-function toDateInputValue(val){
+function toDateInputValue(val) {
   if (!val) return '';
   const s = String(val).trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
   const d = new Date(s);
-  if (!isNaN(d)) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,'0');
-    const dd = String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${dd}`;
-  }
-  const m2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m2) return `${m2[3]}-${m2[2].padStart(2,'0')}-${m2[1].padStart(2,'0')}`;
+  if (!isNaN(d)) return d.toISOString().slice(0, 10);
   return '';
 }
-
-// ดึงค่าจาก Select + อื่นๆ
-function getToolTypeValue(selectId = 'toolTypeSelect', otherId = 'toolTypeOther') {
-  const sel = document.getElementById(selectId);
-  const other = document.getElementById(otherId);
-  if (!sel) return '';
-  const v = sel.value;
-  if (v === 'อื่นๆ') {
-    const txt = (other?.value || '').trim();
-    return txt || 'อื่นๆ';
-  }
+function getToolTypeValue(selId, othId) {
+  const v = document.getElementById(selId)?.value || '';
+  if (v === 'อื่นๆ') return (document.getElementById(othId)?.value || '').trim() || 'อื่นๆ';
   return v;
 }
-
-// ดึง fileId จากหลายรูปแบบลิงก์ Google Drive
-function extractDriveId(url){
+function extractDriveId(url) {
   url = (url || '').trim();
-  if (!url) return null;
   let m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/); if (m) return m[1];
-  m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);       if (m) return m[1];
+  m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);        if (m) return m[1];
   return null;
 }
-// URL สำหรับฝังใน <img>
-function driveEmbedUrl(url){
+function driveEmbedUrl(url) {
   const id = extractDriveId(url); if (!id) return (url || '').trim();
   return `https://drive.google.com/uc?export=view&id=${id}`;
 }
-// URL สำรอง (thumbnail)
-function driveThumbUrl(url){
+function driveThumbUrl(url) {
   const id = extractDriveId(url); if (!id) return (url || '').trim();
   return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
 }
-    
-// แปลงวันที่แบบปลอดภัย -> ไทย
-function formatDateTH(s){
+function formatDateTH(s) {
   if (!s) return '-';
-  const d = new Date(s);                 // รองรับ 'YYYY-MM-DD' และ 'YYYY-MM-DDTHH:mm'
-  if (isNaN(d)) return String(s);        // ถ้า parse ไม่ได้ ให้โชว์สตริงเดิม
-  return d.toLocaleDateString('th-TH', {
-    day: '2-digit', month: '2-digit', year: 'numeric'
-  });
+  const d = new Date(s); if (isNaN(d)) return String(s);
+  return d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
-function formatDateTimeTH(s){
+function formatDateTimeTH(s) {
   if (!s) return '-';
-  const d = new Date(s);
-  if (isNaN(d)) return String(s);
-  return d.toLocaleString('th-TH', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit', hour12: false
-  });
+  const d = new Date(s); if (isNaN(d)) return String(s);
+  return d.toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
 }
-// แปลงค่าวัน/เวลาเป็น epoch (มิลลิวินาที) เพื่อใช้เรียง
-function toEpoch(val){
-  if (!val) return 0;
-  const d = new Date(val);
-  return isNaN(d) ? 0 : d.getTime();
-}
-// เอาคีย์เรียงหลัก: วันที่รับเครื่องมือ (ถ้าไม่มี ใช้วันที่ผ่าตัด)
-function getSortEpoch(row){
-  return toEpoch(row.receiveDateTime) || toEpoch(row.surgeryDate) || 0;
-}
-// แปลงเป็น ISO แบบ "YYYY-MM-DD" เฉพาะวันที่
-function dateOnlyISO(val){
+function toEpoch(v) { if (!v) return 0; const d = new Date(v); return isNaN(d) ? 0 : d.getTime(); }
+function dateOnlyISO(val) {
   if (!val) return '';
-  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val; // already ISO date
-  // รองรับ dd/MM/yyyy
-  if (typeof val === 'string'){
-    const m = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
-  }
-  const d = new Date(val);
-  return isNaN(d) ? '' : d.toISOString().slice(0,10);
+  const s = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  const d = new Date(s); return isNaN(d) ? '' : d.toISOString().slice(0, 10);
+}
+function getGroupKey(row) { return dateOnlyISO(row.surgeryDate) || dateOnlyISO(row.receiveDateTime) || ''; }
+function fmtBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/1024/1024).toFixed(2) + ' MB';
 }
 
-// เวลาสำหรับใช้เรียง (มิลลิวินาที)
-function toEpoch(val){
-  if (!val) return 0;
-  const d = new Date(val);
-  return isNaN(d) ? 0 : d.getTime();
-}
-
-function getGroupKeyISO(row){
-  return dateOnlyISO(row.surgeryDate) || dateOnlyISO(row.receiveDateTime) || '';
-}
-
-// ข้อความหัวข้อวัน (ไทย)
-function formatGroupTitle(keyISO){
-  if (!keyISO) return 'ไม่ระบุวันที่';
-  return formatDateTH(keyISO); // ใช้ helper formatDateTH ที่คุณมีอยู่แล้ว
-}
-
-
-/* ==============================
-   API (form-urlencoded)
-================================*/
+/* ── API ─────────────────────────────────────────── */
 async function callApi(payload) {
   const form = new URLSearchParams();
-  form.append("payload", JSON.stringify(payload));
-
-  const res = await fetch(API_BASE, { method: "POST", body: form });
-  const text = await res.text(); // debug
-  console.log("API status:", res.status, "body:", text);
-
-  if (!res.ok) throw new Error(`HTTP ${res.status} - ${text.slice(0,200)}`);
-  try { return JSON.parse(text); }
-  catch(e){ throw new Error("Invalid JSON from API: " + text.slice(0,300)); }
+  form.append('payload', JSON.stringify(payload));
+  const res = await fetch(API_BASE, { method: 'POST', body: form });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${text.slice(0, 200)}`);
+  try { return JSON.parse(text); } catch { throw new Error('Invalid JSON: ' + text.slice(0, 200)); }
 }
 
-/* ==============================
-   INIT
-================================*/
-document.addEventListener('DOMContentLoaded', async () => {
-  setNowToReceiveDateTime();
+/* ── STEP UI ─────────────────────────────────────── */
+function setStep(active) {
+  [1,2,3].forEach(n => {
+    const el = document.getElementById(`step${n}El`);
+    el.className = 'step-item' + (n < active ? ' done' : n === active ? ' active' : '');
+    el.querySelector('.step-num').innerHTML =
+      n < active ? '<i class="fas fa-check" style="font-size:.7rem"></i>' : n;
+  });
+}
 
-  // toggle ช่อง "อื่นๆ" (เพิ่ม)
-  document.getElementById('toolTypeSelect').addEventListener('change', function(){
+/* ── INIT ─────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', async () => {
+  setNow();
+
+  // tool type toggle (add form)
+  document.getElementById('toolTypeSelect').addEventListener('change', function () {
     const show = this.value === 'อื่นๆ';
     document.getElementById('toolTypeOther').classList.toggle('hidden', !show);
     if (!show) document.getElementById('toolTypeOther').value = '';
   });
-  // toggle ช่อง "อื่นๆ" (แก้ไข)
-  document.getElementById('editToolTypeSelect').addEventListener('change', function(){
+
+  // tool type toggle (edit modal)
+  document.getElementById('editToolTypeSelect').addEventListener('change', function () {
     const show = this.value === 'อื่นๆ';
     document.getElementById('editToolTypeOther').classList.toggle('hidden', !show);
     if (!show) document.getElementById('editToolTypeOther').value = '';
   });
 
-  // preview รูปตอนเพิ่ม
-  document.getElementById('toolImage').addEventListener('change', (e) => {
+  // Image upload & resize (add form)
+  document.getElementById('toolImage').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) { currentPreviewDataURL = null; return; }
-    const rd = new FileReader();
-    rd.onload = ev => {
-      currentPreviewDataURL = ev.target.result;
+
+    document.getElementById('uploadStatus').textContent = '⏳ กำลังย่อภาพ...';
+    document.getElementById('uploadStatus').classList.remove('hidden');
+
+    try {
+      const result = await resizeImageFile(file);
+      currentPreviewDataURL = result.dataURL;
+
+      const preview = document.getElementById('imagePreview');
       document.getElementById('previewImg').src = currentPreviewDataURL;
-      document.getElementById('imagePreview').classList.remove('hidden');
-    };
-    rd.readAsDataURL(file);
+      preview.classList.add('show');
+
+      const zone = document.getElementById('uploadZone');
+      zone.classList.add('has-image');
+      zone.querySelector('i.fa-cloud-upload-alt').style.display = 'none';
+
+      const badge = document.getElementById('imgSizeBadge');
+      badge.className = 'upload-size-badge';
+      badge.textContent = `${result.w}×${result.h}px · ประมาณ ${fmtBytes(result.newBytes)} (จาก ${fmtBytes(result.originalSize)})`;
+      badge.classList.remove('hidden');
+
+      document.getElementById('uploadStatus').textContent = '✅ ย่อภาพเรียบร้อย';
+      setTimeout(() => document.getElementById('uploadStatus').classList.add('hidden'), 2000);
+    } catch (err) {
+      notify('error', 'อ่านไฟล์รูปไม่ได้: ' + err.message);
+      document.getElementById('uploadStatus').classList.add('hidden');
+    }
   });
 
-  // preview รูปตอนแก้ไข
-  document.getElementById('editImageInput').addEventListener('change', (e)=>{
-    const f = e.target.files[0];
-    if (!f) return;
-    const rd = new FileReader();
-    rd.onload = ev => {
-      editNewImageDataURL = ev.target.result;
+  // Image upload & resize (edit modal)
+  document.getElementById('editImageInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    try {
+      const result = await resizeImageFile(file);
+      editNewImageDataURL = result.dataURL;
       document.getElementById('editPreviewImg').src = editNewImageDataURL;
-      document.getElementById('editImagePreview').classList.remove('hidden');
-    };
-    rd.readAsDataURL(f);
+      document.getElementById('editImagePreview').classList.add('show');
+    } catch (err) { notify('error', 'ย่อรูปไม่ได้: ' + err.message); }
   });
-  document.getElementById('btnClearEditImage').addEventListener('click', ()=>{
+  document.getElementById('btnClearEditImage').addEventListener('click', () => {
     editNewImageDataURL = null;
     document.getElementById('editImageInput').value = '';
-    document.getElementById('editImagePreview').classList.add('hidden');
+    document.getElementById('editImagePreview').classList.remove('show');
   });
 
-  // เปิดรูปใน modal จากปุ่มในตาราง
+  // Table click delegation (view image)
   document.getElementById('dataTableBody').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action="view-image"]');
     if (!btn) return;
     const idx = Number(btn.dataset.idx);
-    const raw = (((medicalTools[idx] || {}).imageUrl) || '').toString().trim();
-    openImageModal(raw);
-  });
-  // ปิด modal รูป (คลิกพื้นหลัง)
-  document.getElementById('imageModal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeImageModal();
-  });
-  // ปิด modal แก้ไข (คลิกพื้นหลัง)
-  document.getElementById('editModal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeEditModal();
+    openImageModal(((medicalTools[idx] || {}).imageUrl || '').toString().trim());
   });
 
-  // คิว pending: ลบรายการ
-  document.getElementById('pendingBody')?.addEventListener('click', (e) => {
+  // Close modals on overlay click
+  ['imageModal','editModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', e => {
+      if (e.target === e.currentTarget) document.getElementById(id).classList.remove('show');
+    });
+  });
+
+  // pending: delete row
+  document.getElementById('pendingBody').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-remove]');
     if (!btn) return;
-    const i = Number(btn.dataset.remove);
-    pendingSets.splice(i, 1);
+    pendingSets.splice(Number(btn.dataset.remove), 1);
     renderPending();
   });
-  // ปุ่มเพิ่มชุด
-  document.getElementById('btnAddSet').addEventListener('click', onAddSet);
-  // ปุ่มล้างฟอร์มชุดนี้
-  document.getElementById('btnResetCurrent').addEventListener('click', onResetCurrentSet);
-  // ปุ่มบันทึกทั้งหมด
-  document.getElementById('btnSaveAll').addEventListener('click', onSaveAll);
 
-  // submit แก้ไข
+  document.getElementById('btnAddSet').addEventListener('click', onAddSet);
+  document.getElementById('btnResetCurrent').addEventListener('click', onResetCurrentSet);
+  document.getElementById('btnSaveAll').addEventListener('click', onSaveAll);
   document.getElementById('editForm').addEventListener('submit', onEditSubmit);
 
-  // ping & โหลดข้อมูล
+  // load
   try {
-    console.log("ping:", await callApi({ action: "ping" }));
+    await callApi({ action: 'ping' });
     await loadData();
   } catch (err) {
-    notify('error', "API มีปัญหา:\n" + err.message + "\nโปรดตรวจ URL / สิทธิ์ของ Web App", {timeout: 5000});
+    notify('error', 'เชื่อมต่อ API ไม่ได้:\n' + err.message, { timeout: 6000 });
   }
 });
 
-/* ==============================
-   LOAD & TABLE
-================================*/
+/* ── LOAD & TABLE ────────────────────────────────── */
 async function loadData() {
-  const json = await callApi({ action: "list" });
-  if (!json.success) throw new Error(json.message || "list failed");
+  const json = await callApi({ action: 'list' });
+  if (!json.success) throw new Error(json.message || 'list failed');
   medicalTools = json.data || [];
   updateTable();
 }
 
 function updateTable() {
   const tbody = document.getElementById('dataTableBody');
-  const recordCount = document.getElementById('recordCount');
+  const cntEl = document.getElementById('recordCount');
 
-  if (!Array.isArray(medicalTools) || medicalTools.length === 0) {
-    tbody.innerHTML = `
-      <tr id="noDataRow">
-        <td colspan="11" class="px-4 py-8 text-center text-gray-500">
-          <i class="fas fa-inbox text-4xl mb-2 block"></i>ยังไม่มีข้อมูล
-        </td>
-      </tr>`;
-    recordCount.textContent = '0 รายการ';
+  if (!medicalTools.length) {
+    tbody.innerHTML = `<tr><td colspan="11" style="padding:0"><div class="empty-state"><i class="fas fa-inbox"></i><p>ยังไม่มีข้อมูล</p></div></td></tr>`;
+    cntEl.textContent = '0 รายการ';
     return;
   }
 
-  // ✅ เรียงกลุ่มวัน: ใหม่ → เก่า
-  //   ถ้าวันเดียวกัน เรียงตามเวลา (receiveDateTime > surgeryDate) ใหม่ → เก่า
   const data = [...medicalTools].sort((a, b) => {
-    const ga = getGroupKeyISO(a);
-    const gb = getGroupKeyISO(b);
-    if (ga !== gb) return ga < gb ? 1 : -1; // วันใหม่มาก่อน
-    const ta = toEpoch(a.receiveDateTime) || toEpoch(a.surgeryDate);
-    const tb = toEpoch(b.receiveDateTime) || toEpoch(b.surgeryDate);
-    return tb - ta; // เวลาใหม่มาก่อน
+    const ga = getGroupKey(a), gb = getGroupKey(b);
+    if (ga !== gb) return ga < gb ? 1 : -1;
+    return (toEpoch(b.receiveDateTime) || toEpoch(b.surgeryDate)) -
+           (toEpoch(a.receiveDateTime) || toEpoch(a.surgeryDate));
   });
 
-  recordCount.textContent = `${data.length} รายการ`;
+  cntEl.textContent = `${data.length} รายการ`;
   tbody.innerHTML = '';
 
-  let currentGroup = '';
-  let seqInGroup = 0;
-
-  data.forEach((tool) => {
-    const groupKey = getGroupKeyISO(tool);
-
-    // แทรกหัวข้อ "วันที่ ..." เมื่อเปลี่ยนวัน
-    if (groupKey !== currentGroup) {
-      currentGroup = groupKey;
-      seqInGroup = 0;
-      const heading = document.createElement('tr');
-      heading.className = 'bg-indigo-50';
-      heading.innerHTML = `
-        <td colspan="11" class="px-4 py-2 text-sm font-semibold text-gray-700">
-          <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 7V3m8 4V3M5 8h14M5 21h14a2 2 0 002-2V8H3v11a2 2 0 002 2z"></path>
-            </svg>
-            <span>วันที่: ${formatGroupTitle(groupKey)}</span>
-          </div>
-        </td>`;
-      tbody.appendChild(heading);
+  let curGroup = '', seqInGroup = 0;
+  data.forEach(tool => {
+    const gk = getGroupKey(tool);
+    if (gk !== curGroup) {
+      curGroup = gk; seqInGroup = 0;
+      const hr = document.createElement('tr');
+      hr.className = 'tr-group-heading';
+      hr.innerHTML = `<td colspan="11">
+        <i class="fas fa-calendar-day" style="margin-right:6px"></i>
+        วันที่ผ่าตัด: ${formatDateTH(gk)}
+      </td>`;
+      tbody.appendChild(hr);
     }
-
-    seqInGroup += 1; // ลำดับภายในวัน
-
-    const companyName = (tool.companyName || '').trim();
-    const toolType    = (tool.toolType || '').trim();
-    const quantity    = tool.quantity ?? '';
-    const surgeon     = (tool.surgeon || '').trim();
-    const receiver    = (tool.receiver || '').trim();
+    seqInGroup++;
+    const ri = medicalTools.indexOf(tool);
     const statusText  = (tool.sterileStatus || '').trim();
-    const statusClass = statusText === 'Sterile มาแล้ว'
-      ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
-    const hasImage    = !!(tool.imageUrl && String(tool.imageUrl).trim());
-
-    const receiveText = formatDateTimeTH(tool.receiveDateTime);
-    const surgeryText = formatDateTH(tool.surgeryDate);
-
-    // index จริงใน medicalTools (ใช้กับปุ่มดูรูป/แก้ไข/ลบ)
-    const realIndex = medicalTools.indexOf(tool);
+    const statusClass = statusText === 'Sterile มาแล้ว' ? 'badge-green' :
+                        statusText === 'ไม่ต้องทำ Sterile' ? 'badge-blue' : 'badge-yellow';
+    const hasImage = !!(tool.imageUrl && String(tool.imageUrl).trim());
 
     const row = document.createElement('tr');
-    row.className = 'hover:bg-gray-50';
     row.innerHTML = `
-      <td class="px-4 py-3 text-sm">${seqInGroup}</td>
-      <td class="px-4 py-3 text-sm">${companyName}</td>
-      <td class="px-4 py-3 text-sm">${toolType}</td>
-      <td class="px-4 py-3 text-sm">${quantity}</td>
-      <td class="px-4 py-3 text-sm">
-        <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span>
-      </td>
-      <td class="px-4 py-3 text-sm">${surgeon}</td>
-      <td class="px-4 py-3 text-sm">${receiver || '-'}</td>
-      <td class="px-4 py-3 text-sm whitespace-nowrap">${receiveText}</td>
-      <td class="px-4 py-3 text-sm whitespace-nowrap">${surgeryText}</td>
-      <td class="px-4 py-3 text-sm">
-        ${hasImage
-          ? `<button type="button" class="text-blue-600 hover:text-blue-800"
-                     data-action="view-image" data-idx="${realIndex}">
-               <i class="fas fa-image"></i> ดูรูป
-             </button>`
-          : 'ไม่มีรูป'}
-      </td>
-      <td class="px-4 py-3 text-sm">
-        <div class="flex gap-2">
-          <button onclick="editTool(${realIndex})" class="text-blue-600 hover:text-blue-800" title="แก้ไข"><i class="fas fa-edit"></i></button>
-          <button onclick="deleteTool(${realIndex})" class="text-red-600 hover:text-red-800" title="ลบ"><i class="fas fa-trash"></i></button>
+      <td class="mono">${seqInGroup}</td>
+      <td>${(tool.companyName||'').trim()}</td>
+      <td>${(tool.toolType||'').trim()}</td>
+      <td style="text-align:center">${tool.quantity??''}</td>
+      <td><span class="badge ${statusClass}">${statusText}</span></td>
+      <td>${(tool.surgeon||'').trim()}</td>
+      <td>${(tool.receiver||'-').trim()}</td>
+      <td class="mono" style="font-size:.78rem">${formatDateTimeTH(tool.receiveDateTime)}</td>
+      <td class="mono" style="font-size:.78rem">${formatDateTH(tool.surgeryDate)}</td>
+      <td>${hasImage
+        ? `<button type="button" class="btn btn-outline-blue btn-sm" data-action="view-image" data-idx="${ri}">
+             <i class="fas fa-image"></i> ดูรูป
+           </button>`
+        : `<span class="text-muted">—</span>`}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button type="button" onclick="editTool(${ri})" class="btn btn-ghost btn-sm" title="แก้ไข">
+            <i class="fas fa-pen" style="color:var(--blue)"></i>
+          </button>
+          <button type="button" onclick="deleteTool(${ri})" class="btn btn-ghost btn-sm" title="ลบ">
+            <i class="fas fa-trash" style="color:var(--red)"></i>
+          </button>
         </div>
       </td>`;
     tbody.appendChild(row);
   });
 }
 
-/* ==============================
-   IMAGE MODAL
-================================*/
-function openImageModal(rawUrl){
+/* ── IMAGE MODAL ─────────────────────────────────── */
+function openImageModal(rawUrl) {
   const modal = document.getElementById('imageModal');
   const img   = document.getElementById('modalImage');
-
-  modal.classList.remove('hidden');
-  img.src = '';
-  img.alt = 'กำลังโหลดรูป...';
-  img.style.opacity = '0.25';
-  img.referrerPolicy = 'no-referrer';
-
-  if (!rawUrl) {
-    img.alt = 'ไม่พบ URL ของรูปภาพ';
-    img.style.opacity = '1';
-    console.warn('openImageModal: empty URL');
-    return;
-  }
-
-  const primary  = driveEmbedUrl(rawUrl);
-  const fallback = driveThumbUrl(rawUrl);
-  let usedFallback = false;
-
-  const setSrc = (u) => {
-    const bust = (u.includes('?') ? '&' : '?') + 't=' + Date.now();
-    img.src = u + bust;
-  };
-
-  img.onload = () => {
-    console.log('modalImage onload ✓', usedFallback ? '(fallback)' : '(primary)');
-    img.alt = '';
-    img.style.opacity = '1';
-  };
-  img.onerror = () => {
-    if (!usedFallback) {
-      console.warn('primary image failed, try fallback thumbnail');
-      usedFallback = true;
-      setSrc(fallback);
-    } else {
-      console.error('fallback image failed too');
-      img.src = '';
-      img.alt = 'ไม่สามารถแสดงรูปได้ (สิทธิ์ไฟล์/ลิงก์ผิด หรือไม่ใช่ไฟล์รูป)';
-      img.style.opacity = '1';
-    }
-  };
-
-  console.log('openImageModal URL(primary):', primary);
-  setSrc(primary);
+  modal.classList.add('show');
+  img.src = ''; img.alt = 'กำลังโหลด...'; img.style.opacity = '.3';
+  if (!rawUrl) { img.alt = 'ไม่พบ URL'; img.style.opacity = '1'; return; }
+  const primary = driveEmbedUrl(rawUrl);
+  const thumb   = driveThumbUrl(rawUrl);
+  let tried = false;
+  img.onload  = () => { img.alt = ''; img.style.opacity = '1'; };
+  img.onerror = () => { if (!tried) { tried = true; img.src = thumb + '?t=' + Date.now(); } else { img.alt = 'แสดงรูปไม่ได้'; img.style.opacity = '1'; }};
+  img.src = primary + '?t=' + Date.now();
 }
-function closeImageModal(){ document.getElementById('imageModal').classList.add('hidden'); }
+function closeImageModal() { document.getElementById('imageModal').classList.remove('show'); }
 
-/* ==============================
-   EDIT FLOW
-================================*/
+/* ── EDIT FLOW ───────────────────────────────────── */
 function editTool(index) {
   editingIndex = index;
-  const tool = medicalTools[index];
-
+  const t = medicalTools[index];
   document.getElementById('editIndex').value = index;
-  document.getElementById('editCompanyName').value = tool.companyName || '';
+  document.getElementById('editCompanyName').value = t.companyName || '';
+  // set tool type
+  const opts = ['Plate and Screw','Nail','เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก','เครื่องมือ Scope','เอกสาร','อื่นๆ'];
+  const found = opts.includes(t.toolType);
+  const sel = document.getElementById('editToolTypeSelect');
+  sel.value = found ? t.toolType : 'อื่นๆ';
+  const oth = document.getElementById('editToolTypeOther');
+  oth.classList.toggle('hidden', found);
+  oth.value = found ? '' : (t.toolType || '');
 
-  // ตั้งค่า "ประเภทเครื่องมือ" ใน Select + อื่นๆ
-  (function setEditToolType(val){
-    const sel = document.getElementById('editToolTypeSelect');
-    const other = document.getElementById('editToolTypeOther');
-    const options = [
-      'Plate and Screw','Nail','เครื่องมือผ่าตัดเปลี่ยนข้อเข่า/ข้อสะโพก',
-      'เครื่องมือ Scope','เอกสาร','อื่นๆ'
-    ];
-    const found = options.includes(val);
-    sel.value = found ? val : 'อื่นๆ';
-    other.classList.toggle('hidden', found);
-    other.value = found ? '' : (val || '');
-  })(tool.toolType || '');
+  document.getElementById('editQuantity').value = t.quantity ?? 1;
+  document.getElementById('editSterileStatus').value = t.sterileStatus || '';
+  document.getElementById('editSurgeon').value = t.surgeon || '';
+  document.getElementById('editSurgeryDate').value = toDateInputValue(t.surgeryDate);
+  document.getElementById('editReceiver').value = t.receiver || '';
 
-  document.getElementById('editQuantity').value = tool.quantity ?? 1;
-  document.getElementById('editSterileStatus').value = tool.sterileStatus || 'ต้องทำ Sterile';
-  document.getElementById('editSurgeon').value = tool.surgeon || '';
-  document.getElementById('editSurgeryDate').value = toDateInputValue(tool.surgeryDate);
-  document.getElementById('editReceiver').value = tool.receiver || '';
-
-  // รูปปัจจุบัน + รีเซ็ตตัวเลือกใหม่
-  const cur = (tool.imageUrl || '').trim();
+  const cur = (t.imageUrl || '').trim();
   document.getElementById('editImageCurrent').innerHTML = cur
-    ? `<span class="text-gray-700">รูปปัจจุบัน:</span> <a href="${cur}" target="_blank" class="underline text-blue-600">เปิดดู</a>`
-    : `<span class="text-gray-500">ยังไม่มีรูป</span>`;
+    ? `<i class="fas fa-link"></i> รูปปัจจุบัน: <a href="${cur}" target="_blank" style="color:var(--blue)">เปิดดูรูป</a>`
+    : `ยังไม่มีรูปภาพ`;
   editNewImageDataURL = null;
   document.getElementById('editImageInput').value = '';
-  document.getElementById('editImagePreview').classList.add('hidden');
+  document.getElementById('editImagePreview').classList.remove('show');
 
-  document.getElementById('editModal').classList.remove('hidden');
+  document.getElementById('editModal').classList.add('show');
 }
-function closeEditModal(){ document.getElementById('editModal').classList.add('hidden'); editingIndex = -1; }
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('show');
+  editingIndex = -1;
+}
 
-async function onEditSubmit(e){
+async function onEditSubmit(e) {
   e.preventDefault();
-
   const idx = parseInt(document.getElementById('editIndex').value, 10);
   const row = medicalTools[idx];
-  if (!row || !row.id) { notify('error','ไม่พบข้อมูลรายการที่จะอัปเดต'); return; }
-
-  // ตรวจ "อื่นๆ" ใน modal
+  if (!row?.id) { notify('error','ไม่พบรายการที่แก้ไข'); return; }
   if (document.getElementById('editToolTypeSelect').value === 'อื่นๆ' &&
-      !document.getElementById('editToolTypeOther').value.trim()){
-    notify('warning','กรุณาระบุประเภทเครื่องมือ (อื่นๆ)'); 
-    return;
+      !document.getElementById('editToolTypeOther').value.trim()) {
+    notify('warning','กรุณาระบุประเภทเครื่องมือ'); return;
   }
-
-  // ป้องกันกดซ้ำ + เปิด Saving
-  const submitBtn = document.querySelector('#editForm button[type="submit"]');
-  if (submitBtn){
-    submitBtn.disabled = true;
-    submitBtn.classList.add('opacity-60','cursor-not-allowed');
-  }
+  const btn = e.target.querySelector('button[type="submit"]');
+  if (btn) { btn.disabled = true; btn.classList.add('opacity-60','cursor-not-allowed'); }
   openSaving();
-
   try {
     const json = await callApi({
-      action: 'update',
-      id: row.id,
+      action: 'update', id: row.id,
       record: {
-        companyName: document.getElementById('editCompanyName').value.trim(),
-        toolType: getToolTypeValue('editToolTypeSelect','editToolTypeOther'),
-        quantity: Number(document.getElementById('editQuantity').value || '0'),
+        companyName:   document.getElementById('editCompanyName').value.trim(),
+        toolType:      getToolTypeValue('editToolTypeSelect','editToolTypeOther'),
+        quantity:      Number(document.getElementById('editQuantity').value || 0),
         sterileStatus: document.getElementById('editSterileStatus').value,
-        surgeon: document.getElementById('editSurgeon').value.trim(),
-        surgeryDate: document.getElementById('editSurgeryDate').value || toDateInputValue(row.surgeryDate),
+        surgeon:       document.getElementById('editSurgeon').value.trim(),
+        surgeryDate:   document.getElementById('editSurgeryDate').value || toDateInputValue(row.surgeryDate),
         receiveDateTime: row.receiveDateTime,
-        receiver: document.getElementById('editReceiver').value.trim()
+        receiver:      document.getElementById('editReceiver').value.trim()
       },
       image: editNewImageDataURL || null
     });
-
-    if (!json.success) throw new Error(json.message || "update failed");
-
-    closeSaving();
-    openResult('success','บันทึกการแก้ไขเรียบร้อยแล้ว');
-
-    editNewImageDataURL = null;
-    closeEditModal();
-    await loadData();
-
+    if (!json.success) throw new Error(json.message || 'update failed');
+    closeSaving(); openResult('success', 'บันทึกการแก้ไขเรียบร้อยแล้ว');
+    editNewImageDataURL = null; closeEditModal(); await loadData();
   } catch (err) {
-    closeSaving();
-    openResult('error','บันทึกไม่สำเร็จ: ' + err.message);
+    closeSaving(); openResult('error', 'บันทึกไม่สำเร็จ: ' + err.message);
   } finally {
-    if (submitBtn){
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('opacity-60','cursor-not-allowed');
-    }
+    if (btn) { btn.disabled = false; btn.classList.remove('opacity-60','cursor-not-allowed'); }
   }
 }
 
-
-async function deleteTool(index){
+async function deleteTool(index) {
   const row = medicalTools[index];
-  if (!row || !row.id) { notify('error','ไม่พบข้อมูลรายการที่จะลบ'); return; }
-  if (!confirm('คุณต้องการลบข้อมูลนี้หรือไม่?')) return;
-  const json = await callApi({ action: 'delete', id: row.id });
-  if (!json.success) throw new Error(json.message || "delete failed");
-  notify('success','ลบข้อมูลเรียบร้อยแล้ว');
-  await loadData();
+  if (!row?.id) { notify('error','ไม่พบรายการ'); return; }
+  if (!confirm('ยืนยันลบข้อมูลนี้?')) return;
+  try {
+    const json = await callApi({ action: 'delete', id: row.id });
+    if (!json.success) throw new Error(json.message || 'delete failed');
+    notify('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+    await loadData();
+  } catch (err) { notify('error', 'ลบไม่สำเร็จ: ' + err.message); }
 }
 
-/* ==============================
-   PENDING QUEUE (หลายชุด)
-================================*/
-function getCurrentSetFromForm() {
+/* ── PENDING QUEUE ───────────────────────────────── */
+function getCurrentSet() {
   return {
-    companyName: document.getElementById('companyName').value.trim(),
-    toolType: getToolTypeValue('toolTypeSelect','toolTypeOther'),
-    quantity: Number(document.getElementById('quantity').value || '0'),
+    companyName:   document.getElementById('companyName').value.trim(),
+    toolType:      getToolTypeValue('toolTypeSelect','toolTypeOther'),
+    quantity:      Number(document.getElementById('quantity').value || 0),
     sterileStatus: document.getElementById('sterileStatus').value,
-    surgeon: document.getElementById('surgeon').value.trim(),
-    surgeryDate: document.getElementById('surgeryDate').value,
+    surgeon:       document.getElementById('surgeon').value.trim(),
+    surgeryDate:   document.getElementById('surgeryDate').value,
     receiveDateTime: document.getElementById('receiveDateTime').value,
-    imageDataURL: currentPreviewDataURL || null
+    imageDataURL:  currentPreviewDataURL || null
   };
 }
-function validateOneSet(set) {
-  if (!set.companyName) return 'กรุณากรอกชื่อบริษัท';
-  if (!set.toolType) return 'กรุณาเลือก/กรอกประเภทเครื่องมือ';
-  if (!set.quantity || set.quantity < 1) return 'จำนวนต้องมากกว่า 0';
-  if (!set.sterileStatus) return 'กรุณาเลือกสถานะเครื่องมือ';
-  if (!set.surgeon) return 'กรุณากรอกแพทย์ผ่าตัด';
-  if (!set.surgeryDate) return 'กรุณาเลือกวันที่ผ่าตัด';
-  if (!set.receiveDateTime) return 'กรุณาเลือกวันเวลารับเครื่องมือ';
+function validateSet(s) {
+  if (!s.companyName) return 'กรุณากรอกชื่อบริษัท';
+  if (!s.toolType)    return 'กรุณาเลือก/กรอกประเภทเครื่องมือ';
+  if (!s.quantity || s.quantity < 1) return 'จำนวนต้องมากกว่า 0';
+  if (!s.sterileStatus) return 'กรุณาเลือกสถานะเครื่องมือ';
+  if (!s.surgeon)     return 'กรุณากรอกแพทย์ผ่าตัด';
+  if (!s.surgeryDate) return 'กรุณาเลือกวันที่ผ่าตัด';
+  if (!s.receiveDateTime) return 'กรุณาเลือกวันเวลารับเครื่องมือ';
   return null;
 }
 function renderPending() {
-  const cnt = document.getElementById('pendingCount');
-  const empty = document.getElementById('pendingEmpty');
-  const list = document.getElementById('pendingList');
-  const body = document.getElementById('pendingBody');
+  const cnt       = document.getElementById('pendingCount');
+  const empty     = document.getElementById('pendingEmpty');
+  const tableWrap = document.getElementById('pendingTableWrap');
+  const body      = document.getElementById('pendingBody');
+  const saveSection = document.getElementById('saveSection');
 
   cnt.textContent = `${pendingSets.length} ชุด`;
+
   if (!pendingSets.length) {
-    empty.classList.remove('hidden'); list.classList.add('hidden'); body.innerHTML = '';
+    empty.classList.remove('hidden');
+    tableWrap.classList.add('hidden');
+    saveSection.classList.add('hidden');
+    setStep(1);
     return;
   }
-  empty.classList.add('hidden'); list.classList.remove('hidden'); body.innerHTML = '';
 
+  empty.classList.add('hidden');
+  tableWrap.classList.remove('hidden');
+  saveSection.classList.remove('hidden');
+  setStep(2);
+
+  body.innerHTML = '';
   pendingSets.forEach((s, i) => {
     const tr = document.createElement('tr');
-    const sd = s.surgeryDate ? new Date(s.surgeryDate).toLocaleDateString('th-TH') : '-';
+    const statusClass = s.sterileStatus === 'Sterile มาแล้ว' ? 'badge-green' :
+                        s.sterileStatus === 'ไม่ต้องทำ Sterile' ? 'badge-blue' : 'badge-yellow';
     tr.innerHTML = `
-      <td class="px-4 py-2 text-sm">${i+1}</td>
-      <td class="px-4 py-2 text-sm">${s.companyName}</td>
-      <td class="px-4 py-2 text-sm">${s.toolType}</td>
-      <td class="px-4 py-2 text-sm">${s.quantity}</td>
-      <td class="px-4 py-2 text-sm">${s.sterileStatus}</td>
-      <td class="px-4 py-2 text-sm">${s.surgeon}</td>
-      <td class="px-4 py-2 text-sm">${sd}</td>
-      <td class="px-4 py-2 text-sm">
-        ${s.imageDataURL ? '<span class="text-green-700">มีรูป</span>' : '<span class="text-gray-500">ไม่มีรูป</span>'}
-      </td>
-      <td class="px-4 py-2 text-sm">
-        <button type="button" class="text-red-600 hover:text-red-800" data-remove="${i}">
-          <i class="fas fa-trash"></i>
+      <td class="mono">${i+1}</td>
+      <td>${s.companyName}</td>
+      <td>${s.toolType}</td>
+      <td style="text-align:center">${s.quantity}</td>
+      <td><span class="badge ${statusClass}">${s.sterileStatus}</span></td>
+      <td>${s.surgeon}</td>
+      <td class="mono">${s.surgeryDate ? new Date(s.surgeryDate).toLocaleDateString('th-TH') : '-'}</td>
+      <td>${s.imageDataURL
+        ? `<span class="badge badge-green"><i class="fas fa-check"></i> มีรูป</span>`
+        : `<span class="text-muted">—</span>`}</td>
+      <td>
+        <button type="button" class="btn btn-ghost btn-sm" data-remove="${i}" title="ลบชุดนี้">
+          <i class="fas fa-trash" style="color:var(--red)"></i>
         </button>
       </td>`;
     body.appendChild(tr);
   });
 }
-function onAddSet(){
-  // ถ้าเลือก "อื่นๆ" แต่ไม่พิมพ์ ให้เตือน
+function onAddSet() {
   if (document.getElementById('toolTypeSelect').value === 'อื่นๆ' &&
-      !document.getElementById('toolTypeOther').value.trim()){
+      !document.getElementById('toolTypeOther').value.trim()) {
     notify('warning','กรุณาระบุประเภทเครื่องมือในช่อง "อื่นๆ"'); return;
   }
-  const set = getCurrentSetFromForm();
-  const err = validateOneSet(set);
+  const set = getCurrentSet();
+  const err = validateSet(set);
   if (err) { notify('warning', err); return; }
 
   pendingSets.push(set);
   renderPending();
 
-  // เคลียร์เฉพาะชุดนี้ (เก็บวัน/เวลาเดิมไว้)
-  document.getElementById('companyName').value = '';
+  // clear form (keep dates)
+  ['companyName','quantity','surgeon'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('toolTypeSelect').value = '';
-  document.getElementById('toolTypeOther').value = '';
+  document.getElementById('toolTypeOther').value  = '';
   document.getElementById('toolTypeOther').classList.add('hidden');
-  document.getElementById('quantity').value = '';
-  document.getElementById('sterileStatus').value = '';
-  document.getElementById('surgeon').value = '';
-
+  document.getElementById('sterileStatus').value  = '';
   currentPreviewDataURL = null;
   document.getElementById('toolImage').value = '';
-  document.getElementById('imagePreview').classList.add('hidden');
+  const preview = document.getElementById('imagePreview');
+  preview.classList.remove('show');
+  const zone = document.getElementById('uploadZone');
+  zone.classList.remove('has-image');
+  zone.querySelector('i.fa-cloud-upload-alt').style.display = '';
+  document.getElementById('imgSizeBadge').classList.add('hidden');
 
-  notify('success', 'เพิ่มชุดเครื่องมือเข้าคิวแล้ว');
+  notify('success', `เพิ่มชุด "${set.companyName}" เข้าคิวแล้ว (${pendingSets.length} ชุดในคิว)`);
   document.getElementById('companyName').focus();
+
+  // scroll to queue
+  document.getElementById('pendingCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-function onResetCurrentSet(){
+function onResetCurrentSet() {
   document.getElementById('medicalToolForm').reset();
   document.getElementById('toolTypeOther').classList.add('hidden');
-  document.getElementById('imagePreview').classList.add('hidden');
+  document.getElementById('imagePreview').classList.remove('show');
+  const zone = document.getElementById('uploadZone');
+  zone.classList.remove('has-image');
+  zone.querySelector('i.fa-cloud-upload-alt').style.display = '';
+  document.getElementById('imgSizeBadge').classList.add('hidden');
   currentPreviewDataURL = null;
-  setNowToReceiveDateTime();
-  notify('info', 'ล้างฟอร์มชุดนี้แล้ว');
+  setNow();
+  notify('info', 'ล้างฟอร์มแล้ว');
 }
-async function onSaveAll(){
+async function onSaveAll() {
   if (!pendingSets.length) { notify('warning','ยังไม่มีชุดในคิว'); return; }
   const receiver = (document.getElementById('receiverFinal').value || '').trim();
-  if (!receiver) { notify('warning','กรุณากรอกชื่อผู้รับเครื่องมือ'); return; }
-  if (!confirm(`ยืนยันบันทึกทั้งหมด ${pendingSets.length} ชุด ?`)) return;
+  if (!receiver) {
+    notify('warning','กรุณากรอกชื่อผู้รับเครื่องมือ');
+    document.getElementById('receiverFinal').focus();
+    return;
+  }
+  if (!confirm(`ยืนยันบันทึกทั้งหมด ${pendingSets.length} ชุด?`)) return;
 
-  // ป้องกันกดซ้ำ + เปิด Saving Modal
+  setStep(3);
   const btn = document.getElementById('btnSaveAll');
-  btn.disabled = true;
-  btn.classList.add('opacity-60','cursor-not-allowed');
+  btn.disabled = true; btn.classList.add('opacity-60');
   openSaving();
-
-  const totalToSave = pendingSets.length;
+  const total = pendingSets.length;
 
   try {
     for (const s of pendingSets) {
-      const payload = {
+      const res = await callApi({
         action: 'create',
         record: {
-          companyName: s.companyName,
-          toolType: s.toolType,
-          quantity: s.quantity,
-          sterileStatus: s.sterileStatus,
-          surgeon: s.surgeon,
-          surgeryDate: s.surgeryDate,
+          companyName:    s.companyName,
+          toolType:       s.toolType,
+          quantity:       s.quantity,
+          sterileStatus:  s.sterileStatus,
+          surgeon:        s.surgeon,
+          surgeryDate:    s.surgeryDate,
           receiveDateTime: s.receiveDateTime,
-          receiver: receiver
+          receiver
         },
         image: s.imageDataURL || null
-      };
-      const res = await callApi(payload);
+      });
       if (!res.success) throw new Error(res.message || 'create failed');
     }
-
-    // ปิด Saving + แจ้งผลสำเร็จด้วย Result Modal
     closeSaving();
-    openResult('success', `บันทึกรับเครื่องมือสำเร็จ ${totalToSave} ชุด`);
-
-    // เคลียร์คิวและรีเฟรช
+    openResult('success', `บันทึกรับเครื่องมือสำเร็จ ${total} ชุด`);
     pendingSets = [];
     renderPending();
     document.getElementById('receiverFinal').value = '';
     await loadData();
-
   } catch (err) {
-    // ปิด Saving + แจ้งผลล้มเหลวด้วย Result Modal
     closeSaving();
     openResult('error', 'บันทึกไม่สำเร็จ: ' + err.message);
+    setStep(2);
   } finally {
-    btn.disabled = false;
-    btn.classList.remove('opacity-60','cursor-not-allowed');
+    btn.disabled = false; btn.classList.remove('opacity-60');
   }
 }
 
-
-// ====== Modal: Saving / Result ======
-function openSaving(){
-  document.getElementById('savingModal').classList.remove('hidden');
-}
-function closeSaving(){
-  document.getElementById('savingModal').classList.add('hidden');
-}
-
-function openResult(type='success', text='บันทึกสำเร็จ'){
-  const modal = document.getElementById('resultModal');
+/* ── SAVING / RESULT MODALS ──────────────────────── */
+function openSaving()  { document.getElementById('savingModal').classList.add('show'); }
+function closeSaving() { document.getElementById('savingModal').classList.remove('show'); }
+function openResult(type = 'success', text = '') {
+  const modal   = document.getElementById('resultModal');
   const iconBox = document.getElementById('resultIcon');
   const titleEl = document.getElementById('resultTitle');
   const textEl  = document.getElementById('resultText');
-
-  // icon + สีตามผลลัพธ์
-  if (type === 'success'){
-    iconBox.className = 'mx-auto mb-3 w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center';
-    iconBox.innerHTML = '<i class="fas fa-check text-xl"></i>';
+  if (type === 'success') {
+    iconBox.className = 'icon-ring'; iconBox.style.cssText = 'background:#dcfce7;color:#16a34a';
+    iconBox.innerHTML = '<i class="fas fa-check"></i>';
     titleEl.textContent = 'บันทึกเรียบร้อย';
   } else {
-    iconBox.className = 'mx-auto mb-3 w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center';
-    iconBox.innerHTML = '<i class="fas fa-times text-xl"></i>';
+    iconBox.className = 'icon-ring'; iconBox.style.cssText = 'background:#fee2e2;color:#dc2626';
+    iconBox.innerHTML = '<i class="fas fa-times"></i>';
     titleEl.textContent = 'บันทึกไม่สำเร็จ';
   }
-  textEl.textContent = text || '';
-
-  modal.classList.remove('hidden');
-
-  // ปิดด้วยปุ่ม
-  document.getElementById('resultCloseBtn').onclick = () => {
-    modal.classList.add('hidden');
-  };
-  // ปิดเมื่อคลิกฉากหลัง
-  modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+  textEl.textContent = text;
+  modal.classList.add('show');
+  const closeBtn = document.getElementById('resultCloseBtn');
+  closeBtn.onclick = () => modal.classList.remove('show');
+  modal.onclick = e => { if (e.target === modal) modal.classList.remove('show'); };
 }
-
 </script>
-
-
+</body>
 </html>
